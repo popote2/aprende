@@ -4,7 +4,7 @@
 // Cambia CACHE si modificas la lista de archivos.
 importScripts('palabras.js', 'premios.js');   // palabras para leer y pegatinas
 
-var CACHE = 'sumas-v45';
+var CACHE = 'sumas-v46';
 // Grabaciones opcionales: se guardan si existen; si faltan no pasa nada
 var OPTIONAL = ['muy-bien', 'uy', 'quedan', 'son', 'premio', 'premio-oro', 'album-completo', 'album-nuevo'];
 for (var n = 0; n <= 10; n++) OPTIONAL.push('era-' + n, 'si-a-' + n, 'quito-' + n, 'pongo-' + n);

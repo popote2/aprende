@@ -1670,7 +1670,7 @@
     elTraceMsg.className = 'msg';
     elTraceMsg.textContent = '¡Muy bien Inés!';
     elTraceMsg.hidden = false;
-    var prize = addPoint();
+    var prize = tmode === 'trace' ? null : addPoint();   // trazar con guía es muy fácil: no da estrellas
     var done = false, item = tr;
     function next() {
       if (done || tr !== item) return;
