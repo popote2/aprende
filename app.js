@@ -1611,6 +1611,7 @@
       var first = [{ clip: wItem.clip, pitch: 1, rate: 0.9 }];
       var sc = wItem.sils.length > 1 ? dictSylClip(wItem, 0) : null;
       if (sc) first.push({ clip: sc, pitch: 1, rate: 0.85 });
+      if (wItem.copy) first.push({ clip: letterClip(wItem.text.charAt(0)), pitch: 1, rate: 0.9 });
       play(first);
     } else {
       var m = missItem();
@@ -1628,8 +1629,9 @@
     elTraceClear.hidden = true;
     if (tmode === 'tword' && tr.hint) wItem.hinted = true;
     if (tmode === 'tword' && wItem.pos < wItem.text.length - 1) {
-      // "la ge" (la que ha escrito) y, si empieza otra sílaba, cómo suena ("to...")
-      var said = [{ clip: letterClip(tr.letter), pitch: 1, rate: 0.9 }];
+      // Todo lo que suena es de la letra que toca ahora (no de la que acaba de escribir):
+      // si empieza otra sílaba, cómo suena ("to..."); en copia, además, el nombre de la letra.
+      var said = [];
       wItem.pos++;
       showFace(true);
       renderTarget();
@@ -1638,7 +1640,8 @@
         var sc = dictSylClip(wItem, wItem.pos);
         if (sc) said.push({ clip: sc, pitch: 1, rate: 0.85 });
       }
-      play(said);
+      if (wItem.copy) said.push({ clip: letterClip(wItem.text.charAt(wItem.pos)), pitch: 1, rate: 0.9 });
+      if (said.length) play(said);
       var nextL = wItem.text.charAt(wItem.pos), item = wItem;
       traceLater(700, function () {
         if (wItem !== item) return;
