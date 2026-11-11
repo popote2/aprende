@@ -1708,6 +1708,7 @@
     elTraceWords.hidden = tmode !== 'trace';
     elTraceTarget.hidden = tmode === 'trace';
     elPrevTrace.hidden = tmode !== 'trace';
+    elScore4.parentNode.hidden = tmode === 'trace';   // trazar no da estrellas: sin contador
     var list = traceLetters();
     if (traceIndex >= list.length) traceIndex = 0;
     elTraceWords.innerHTML = '';
