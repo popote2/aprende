@@ -1,0 +1,17 @@
+{
+  "name": "Sumas, restas y letras",
+  "short_name": "Aprende",
+  "description": "Sumas, restas y primeras palabras para niños de 4 y 5 años",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fff4d6",
+  "theme_color": "#1e6fe0",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

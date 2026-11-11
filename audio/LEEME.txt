@@ -1,0 +1,67 @@
+GRABACIONES DE VOZ
+==================
+
+Los .mp3 incluidos se han generado con Piper (síntesis de voz neuronal,
+https://github.com/OHF-Voice/piper1-gpl):
+- Sumas y restas: voz "es_MX-claude-high" (español de México, licencia
+  Apache 2.0: https://huggingface.co/spaces/HirCoir/Piper-TTS-Spanish).
+- Leer (w-*.mp3 y s-*.mp3): voz "es_ES-sharvard-medium", locutora F
+  (español de España). Entrenada con el corpus Sharvard (Universidad de
+  Edimburgo, https://datashare.ed.ac.uk/handle/10283/574), licencia
+  Creative Commons BY 3.0: si publicas la app, conserva este crédito.
+
+Puedes sustituirlos por grabaciones propias con los mismos nombres.
+
+Si pones aquí estos archivos .mp3, la app los usa en lugar de la voz
+sintética del dispositivo. Si falta alguno, esa frase se dice con la voz
+del sistema, así que puedes grabar solo algunos.
+
+  muy-bien.mp3   "¡Muy bien, Inés!"
+  uy.mp3         "¡Casi!"
+  era-0.mp3      "Era el cero"
+  era-1.mp3      "Era el uno"
+  era-2.mp3      "Era el dos"
+  era-3.mp3      "Era el tres"
+  era-4.mp3      "Era el cuatro"
+  era-5.mp3      "Era el cinco"
+  era-6.mp3      "Era el seis"
+  era-7.mp3      "Era el siete"
+  era-8.mp3      "Era el ocho"
+  era-9.mp3      "Era el nueve"
+  era-10.mp3     "Era el diez"
+
+  Ayuda (bombilla):
+  pongo-0.mp3 ... pongo-10.mp3   "le pongo cero," ... "le pongo diez,"  (sumas)
+  son.mp3                        "Son..."                              (sumas)
+  si-a-0.mp3 ... si-a-10.mp3     "Si a cero," ... "Si a diez,"
+  quito-0.mp3 ... quito-10.mp3   "le quito cero," ... "le quito diez,"
+  quedan.mp3                     "Quedan..."
+
+Consejos:
+- Graba con el móvil (Grabadora / Notas de voz) en un sitio silencioso.
+- Corta el silencio del principio y del final (por ejemplo con Audacity,
+  que también exporta a MP3).
+- Cada archivo debería durar 1-2 segundos como mucho.
+- Los nombres deben ser exactamente estos, en minúsculas.
+
+  Leer (botón A):
+  w-<palabra>.mp3   la palabra entera (w-casa.mp3 = "casa")
+  s-<sílaba>.mp3    cada sílaba (s-ca.mp3 = "ca"); sin tildes y ñ -> ny
+  s-ra-suave.mp3, s-ro-suave.mp3   "ra"/"ro" con r suave (PE-RA, LO-RO)
+  La lista de palabras está en palabras.js.
+
+  Sílabas (botón MA):
+  s-<sílaba>.mp3   "La eme con la a, ma."
+  l-<letra>.mp3    "La eme."  (letra suelta)
+  como-en.mp3      "Como en..."
+  w-<palabra>.mp3  palabra de ejemplo
+  La lista está en palabras.js (self.SILABAS).
+  y.mp3            "y" (entre las dos palabras de ejemplo)
+
+  Juego de sílabas (botón de la oreja):
+  q-<sílaba>.mp3   solo la sílaba: "ma" (no hay de la H, que no suena)
+
+  Juego de palabras (botón del gato): usa los w-<palabra>.mp3 de arriba.
+
+  Premios (botón del regalo):
+  premio.mp3       "¡Un premio para ti!" (voz de los mensajes); luego dice el animal (w-<animal>.mp3)

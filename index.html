@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Sumas, restas y letras</title>
+  <meta name="description" content="Sumas, restas y primeras palabras para niños de 4 y 5 años">
+  <meta name="theme-color" content="#1e6fe0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Aprende">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css?v=45">
+</head>
+<body>
+  <main class="app" id="game">
+    <header class="top">
+      <button class="home" id="home" type="button" aria-label="Volver al inicio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 2.8 11a1 1 0 0 0 1.3 1.5l.9-.8V20a1 1 0 0 0 1 1h4v-5.5h4V21h4a1 1 0 0 0 1-1v-8.3l.9.8a1 1 0 0 0 1.3-1.5z"/></svg>
+      </button>
+      <div class="timer" aria-hidden="true"><div class="timer-fill" id="timerFill"></div></div>
+      <button class="help-btn" id="helpBtn" type="button" aria-label="Ayuda" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2z"/><rect x="9" y="19.3" width="6" height="2.7" rx="1.2"/></svg>
+      </button>
+      <div class="score" aria-label="Aciertos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5-4.9-4.6 6.6-.8z"/></svg>
+        <span id="score">0</span>
+      </div>
+    </header>
+
+    <section class="sum" aria-live="polite">
+      <span class="num" id="a">0</span>
+      <span class="plus" id="op" aria-label="más">+</span>
+      <span class="num" id="b">0</span>
+      <div class="help" id="helpPanel" hidden>
+        <div class="help-op" id="helpOp"></div>
+        <div class="dots" id="dots"></div>
+      </div>
+      <div class="msg" id="msg" hidden></div>
+    </section>
+
+    <section class="options" id="options">
+      <button class="opt" type="button"></button>
+      <button class="opt" type="button"></button>
+      <button class="opt" type="button"></button>
+      <button class="opt" type="button"></button>
+    </section>
+  </main>
+
+  <!-- Leer: palabra con dibujo y sílabas que se pueden tocar -->
+  <main class="app reader" id="reader" hidden>
+    <header class="top">
+      <button class="home" id="home2" type="button" aria-label="Volver al inicio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 2.8 11a1 1 0 0 0 1.3 1.5l.9-.8V20a1 1 0 0 0 1 1h4v-5.5h4V21h4a1 1 0 0 0 1-1v-8.3l.9.8a1 1 0 0 0 1.3-1.5z"/></svg>
+      </button>
+    </header>
+
+    <button class="pic" id="pic" type="button" aria-label="Escuchar la palabra">
+      <span class="pic-emoji" id="picEmoji"></span>
+      <svg class="pic-ear" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+    </button>
+
+    <div class="syls" id="syls"></div>
+
+    <div class="next-row">
+      <button class="next-btn" id="nextWord" type="button" aria-label="Siguiente palabra">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h10.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H5z"/></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- Sílabas: la M con la A, MA, como en MANO -->
+  <main class="app syl-screen" id="sylScreen" hidden>
+    <header class="top">
+      <button class="home" id="home3" type="button" aria-label="Volver al inicio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 2.8 11a1 1 0 0 0 1.3 1.5l.9-.8V20a1 1 0 0 0 1 1h4v-5.5h4V21h4a1 1 0 0 0 1-1v-8.3l.9.8a1 1 0 0 0 1.3-1.5z"/></svg>
+      </button>
+    </header>
+
+    <button class="big-syl" id="bigSyl" type="button"></button>
+
+    <div class="letters">
+      <button class="letter" id="letterC" type="button"></button>
+      <span class="letter-plus" aria-hidden="true">+</span>
+      <button class="letter" id="letterV" type="button"></button>
+    </div>
+
+    <div class="examples" id="examples"></div>
+
+    <div class="nav-row">
+      <button class="next-btn prev" id="prevSyl" type="button" aria-label="Sílaba anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h10.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H5z"/></svg></button>
+      <button class="next-btn" id="nextSyl" type="button" aria-label="Sílaba siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h10.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H5z"/></svg></button>
+    </div>
+  </main>
+
+
+  <!-- Juegos: busca la sílaba que se oye y busca la palabra del dibujo -->
+  <main class="app quiz" id="quiz" hidden>
+    <header class="top">
+      <button class="home" id="home4" type="button" aria-label="Volver al inicio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 2.8 11a1 1 0 0 0 1.3 1.5l.9-.8V20a1 1 0 0 0 1 1h4v-5.5h4V21h4a1 1 0 0 0 1-1v-8.3l.9.8a1 1 0 0 0 1.3-1.5z"/></svg>
+      </button>
+      <div class="top-space"></div>
+      <div class="score" aria-label="Aciertos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5-4.9-4.6 6.6-.8z"/></svg>
+        <span id="score2">0</span>
+      </div>
+    </header>
+
+    <section class="quiz-ask" id="quizAsk">
+      <button class="quiz-ear" id="quizEar" type="button" aria-label="Escuchar otra vez">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+      </button>
+      <span class="quiz-pic" id="quizPic" aria-hidden="true"></span>
+      <div class="build-slots" id="buildSlots" hidden></div>
+      <div class="msg" id="quizMsg" hidden></div>
+    </section>
+
+    <section class="options" id="quizOpts">
+      <button class="opt" type="button"></button>
+      <button class="opt" type="button"></button>
+      <button class="opt" type="button"></button>
+      <button class="opt" type="button"></button>
+    </section>
+  </main>
+
+
+  <!-- Álbumes de premios: una pegatina nueva cada 10 estrellas -->
+  <main class="app album" id="album" hidden>
+    <header class="top">
+      <button class="home" id="home5" type="button" aria-label="Volver al inicio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 2.8 11a1 1 0 0 0 1.3 1.5l.9-.8V20a1 1 0 0 0 1 1h4v-5.5h4V21h4a1 1 0 0 0 1-1v-8.3l.9.8a1 1 0 0 0 1.3-1.5z"/></svg>
+      </button>
+      <div class="album-next" id="albumNext" aria-hidden="true"></div>
+      <div class="score" aria-label="Aciertos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5-4.9-4.6 6.6-.8z"/></svg>
+        <span id="score3">0</span>
+      </div>
+    </header>
+    <div class="album-shelf" id="albumShelf"></div>
+    <h2 class="album-title" id="albumTitle"></h2>
+    <div class="album-grid" id="albumGrid"></div>
+  </main>
+
+  <!-- Premio nuevo -->
+  <div class="reward" id="reward" hidden>
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+    <div class="reward-glow"><span class="reward-sticker" id="rewardSticker"></span></div>
+    <button class="next-btn reward-ok" id="rewardOk" type="button" aria-label="Seguir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h10.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H5z"/></svg></button>
+  </div>
+
+  <!-- Rincón de padres: se abre manteniendo pulsado el regalo 3 segundos -->
+  <main class="app trace" id="trace" hidden>
+    <header class="top">
+      <button class="home" id="home6" type="button" aria-label="Volver al inicio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 2.8 11a1 1 0 0 0 1.3 1.5l.9-.8V20a1 1 0 0 0 1 1h4v-5.5h4V21h4a1 1 0 0 0 1-1v-8.3l.9.8a1 1 0 0 0 1.3-1.5z"/></svg>
+      </button>
+      <div class="top-space"></div>
+      <div class="score" aria-label="Aciertos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5-4.9-4.6 6.6-.8z"/></svg>
+        <span id="score4">0</span>
+      </div>
+    </header>
+
+    <section class="trace-target" id="traceTarget" hidden></section>
+
+    <section class="trace-area" id="traceArea">
+      <canvas id="traceCanvas" aria-label="Repasa la letra con el dedo"></canvas>
+      <div class="msg" id="traceMsg" hidden></div>
+      <div class="trace-face" id="traceFace" aria-hidden="true" hidden></div>
+      <button class="trace-clear" id="traceClear" type="button" aria-label="Borrar" hidden>🧽</button>
+      <button class="next-btn prev trace-prev" id="prevTrace" type="button" aria-label="Letra anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h10.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H5z"/></svg></button>
+      <button class="next-btn trace-next" id="nextTrace" type="button" aria-label="Letra siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h10.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H5z"/></svg></button>
+    </section>
+    <section class="examples trace-words" id="traceWords"></section>
+  </main>
+
+  <main class="parents" id="parents" hidden>
+    <div class="p-wrap">
+      <header class="p-head">
+        <button class="p-back" id="parentsBack" type="button">← Volver</button>
+        <h1>Rincón de padres</h1>
+      </header>
+
+      <section class="p-card">
+        <h2>Juegos</h2>
+        <p class="p-note">Los que desactives no salen en la pantalla de inicio.</p>
+        <div id="pModes"></div>
+      </section>
+
+      <section class="p-card">
+        <h2>Dictado</h2>
+        <div class="p-row"><span>Nivel</span><div class="p-seg" id="pDict"></div></div>
+        <p class="p-note" id="pDictNote"></p>
+      </section>
+
+      <section class="p-card">
+        <h2>Sumas y restas</h2>
+        <div class="p-row"><span>Tiempo por operación</span><div class="p-seg" id="pTimer"></div></div>
+        <div class="p-row"><span>Números hasta</span><div class="p-seg" id="pMax"></div></div>
+      </section>
+
+      <section class="p-card">
+        <h2>Letras de los juegos de sílabas</h2>
+        <label class="p-check"><input type="checkbox" id="pAuto">
+          <span>Automático: empieza con M, P y L y añade una letra nueva cada 10 aciertos</span></label>
+        <p class="p-note" id="pLevel"></p>
+        <div class="p-chips" id="pLetters"></div>
+        <p class="p-note">Se usan en «Busca la sílaba» (👂) y en la sección de sílabas (MA).</p>
+      </section>
+
+      <section class="p-card">
+        <h2>Premios</h2>
+        <p class="p-note" id="pPrizeNote"></p>
+        <div id="pAlbums"></div>
+        <p class="p-note">Las pegatinas en gris son las que aún no tiene; las de fondo dorado son pegatinas de oro.</p>
+      </section>
+
+      <section class="p-card">
+        <h2>Lo que más falla</h2>
+        <div id="pStats"></div>
+        <button class="p-btn" type="button" data-reset="stats">Borrar esta lista</button>
+      </section>
+
+      <section class="p-card">
+        <h2>Poner a cero</h2>
+        <div class="p-list">
+          <button class="p-btn" type="button" data-reset="stars">Borrar estrellas y premios</button>
+          <button class="p-btn" type="button" data-reset="level">Volver a empezar el nivel de sílabas (M, P y L)</button>
+          <button class="p-btn" type="button" data-reset="dict">Volver a empezar el dictado (copia)</button>
+        </div>
+      </section>
+
+      <p class="p-note p-foot">Todo se guarda solo en este dispositivo; no se envía nada a ningún sitio.</p>
+    </div>
+  </main>
+
+  <div class="start" id="start">
+    <button class="album-btn" id="albumBtn" type="button" aria-label="Mis premios">
+      <span class="album-gift" aria-hidden="true">🎁</span>
+      <span class="album-dots" id="albumDots" aria-hidden="true"></span>
+    </button>
+    <div class="modes">
+      <div class="mode-group group-num">
+        <button class="mode mode-sum" type="button" data-mode="sum" aria-label="Sumas">
+          <span class="mode-art"><span class="art-math">2<i>+</i>3</span></span>
+          <span class="mode-name">Sumas</span>
+        </button>
+        <button class="mode mode-sub" type="button" data-mode="sub" aria-label="Restas">
+          <span class="mode-art"><span class="art-math">5<i>−</i>2</span></span>
+          <span class="mode-name">Restas</span>
+        </button>
+      </div>
+      <div class="mode-group group-letters">
+        <button class="mode mode-syl" type="button" data-mode="syl" aria-label="Sílabas">
+          <span class="mode-art art-stack"><span class="art-small">M + A</span><span class="art-big">MA</span></span>
+          <span class="mode-name">Sílabas</span>
+        </button>
+        <button class="mode mode-sylq" type="button" data-mode="sylq" aria-label="Escucha y busca la sílaba">
+          <span class="mode-art"><span class="art-emoji">👂</span><span class="art-chip">MA</span></span>
+          <span class="mode-name">Escucha y busca</span>
+        </button>
+        <button class="mode mode-read" type="button" data-mode="read" aria-label="Leer palabras">
+          <span class="mode-art"><span class="art-tile">CA</span><span class="art-tile t2">SA</span></span>
+          <span class="mode-name">Leer palabras</span>
+        </button>
+        <button class="mode mode-wordq" type="button" data-mode="wordq" aria-label="Mira el dibujo y busca la palabra">
+          <span class="mode-art"><span class="art-emoji">🐱</span><span class="art-chip">GATO</span></span>
+          <span class="mode-name">Mira y lee</span>
+        </button>
+        <button class="mode mode-build" type="button" data-mode="build" aria-label="Forma la palabra con sílabas">
+          <span class="mode-art"><span class="art-emoji">🧩</span><span class="art-tile">GA</span><span class="art-tile t2">TO</span></span>
+          <span class="mode-name">Forma palabras</span>
+        </button>
+        <button class="mode mode-trace" type="button" data-mode="trace" aria-label="Repasa las letras con el dedo">
+          <span class="mode-art"><span class="art-emoji">☝️</span><span class="art-outline">M</span></span>
+          <span class="mode-name">Traza letras</span>
+        </button>
+        <button class="mode mode-tword" type="button" data-mode="tword" aria-label="Dictado: escribe lo que oyes">
+          <span class="mode-art"><span class="art-emoji">✏️</span><span class="art-chip">👂 GATO</span></span>
+          <span class="mode-name">Dictado</span>
+        </button>
+        <button class="mode mode-tmiss" type="button" data-mode="tmiss" aria-label="Escribe la letra que falta">
+          <span class="mode-art"><span class="art-emoji">🐱</span><span class="art-chip"><u>?</u>ATO</span></span>
+          <span class="mode-name">Letra que falta</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="palabras.js?v=45"></script>
+  <script src="premios.js?v=45"></script>
+  <script src="app.js?v=45"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>
