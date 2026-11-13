@@ -1293,7 +1293,7 @@
     G: [path(arc(52, 50, 34, 40, -40, -360), [60, 50])],
     R: [[[28, 10], [28, 90]], P_BOWL, [[46, 50], [78, 90]]],
     V: [[[18, 10], [50, 90], [82, 10]]],
-    J: [path([66, 10], arc(44, 64, 22, 26, 0, 180))],
+    J: [[[36, 10], [82, 10]], path([66, 10], arc(44, 64, 22, 26, 0, 170))],   // con raya, como la letra de arriba
     Z: [[[20, 10], [80, 10], [20, 90], [80, 90]]],
     'Ñ': [[[22, 24], [22, 92]], [[22, 24], [78, 92], [78, 24]], tilde],
     Y: [[[18, 10], [50, 50]], [[82, 10], [50, 50], [50, 90]]],
@@ -1311,6 +1311,14 @@
     return out;
   }
   Object.keys(LETTER_STROKES).forEach(function (l) { LETTER_STROKES[l] = LETTER_STROKES[l].map(densify); });
+  // Otras formas de escribir la misma letra que también valen al escribir sin guía
+  var LETTER_VARIANTS = {
+    J: [[path([66, 10], arc(44, 64, 22, 26, 0, 170))]],                    // J sin raya
+    I: [[[[50, 10], [50, 90]], [[34, 10], [66, 10]], [[34, 90], [66, 90]]]]   // I con rayas arriba y abajo
+  };
+  Object.keys(LETTER_VARIANTS).forEach(function (l) {
+    LETTER_VARIANTS[l] = LETTER_VARIANTS[l].map(function (v) { return v.map(densify); });
+  });
 
   var TRACE_KEY = 'sumas.trazo';
   var TRACE_TOL = 11;                 // cuánto puede separarse del camino y seguir contando como bien
@@ -1846,7 +1854,7 @@
   // tamaño la haya escrito. Está bien si se parece a la buena y no se parece más a otra (E / F, P / R...)
   var TPL = {};
   Object.keys(LETTER_STROKES).forEach(function (l) {
-    TPL[l] = [].concat.apply([], LETTER_STROKES[l]);
+    TPL[l] = [LETTER_STROKES[l]].concat(LETTER_VARIANTS[l] || []).map(function (st) { return [].concat.apply([], st); });
   });
   function bbox(a) {
     var b = [Infinity, Infinity, -Infinity, -Infinity];
@@ -1864,6 +1872,8 @@
     for (k = 0; k < tpl.length; k++) b += minDist(tpl[k], n);
     return a / n.length + b / tpl.length;
   }
+  // Margen al escribir sin guía: parecido máximo y cuánto más parecida a su letra que a otra
+  var FREE_MAX = 16, FREE_RATIO = 1.4;
   function judgeFree() {
     var pts = [];
     tr.inks.forEach(function (ink) { pts = pts.concat(ink.pts); });
@@ -1875,9 +1885,10 @@
       for (var k = 0; k < 160; k++) red.push(pts[Math.floor(k * step)]);
       pts = red;
     }
-    var own = shapeScore(pts, TPL[tr.letter]), best = Infinity;
-    Object.keys(TPL).forEach(function (l) { if (l !== tr.letter) best = Math.min(best, shapeScore(pts, TPL[l])); });
-    return own <= 13 && own <= best * 1.25;
+    function score(l) { return Math.min.apply(null, TPL[l].map(function (t) { return shapeScore(pts, t); })); }
+    var own = score(tr.letter), best = Infinity;
+    Object.keys(TPL).forEach(function (l) { if (l !== tr.letter) best = Math.min(best, score(l)); });
+    return own <= FREE_MAX && own <= best * FREE_RATIO;
   }
   function freeCheck() {
     if (!tr || tr.state !== 'playing' || !tr.free || !tr.inks.length) return;
