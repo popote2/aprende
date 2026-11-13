@@ -1179,7 +1179,7 @@
     fitQuiz();
     fitButtons();
     if (quizMode === 'sylq') askSyl();
-    if (quizMode === 'build') sayBuildWord();
+    if (quizMode === 'build' || quizMode === 'wordq') sayBuildWord();   // dice la palabra del dibujo
   }
 
   function askSyl() {
@@ -1234,7 +1234,7 @@
     btn.addEventListener('click', function () { if (quizMode === 'build') buildTap(btn); else quizAnswer(btn); });
   });
   elQuizPic.addEventListener('click', function () {
-    if (quizState === 'playing' && quizMode === 'build') sayBuildWord();
+    if (quizState === 'playing' && (quizMode === 'build' || quizMode === 'wordq')) sayBuildWord();
   });
   elQuizEar.addEventListener('click', function () {
     if (quizState === 'playing') askSyl();
