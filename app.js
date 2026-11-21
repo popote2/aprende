@@ -489,7 +489,7 @@
   }
 
   function startHelp() {
-    if ((mode !== 'sub' && mode !== 'sum') || state !== 'playing' || helpUsed) return;
+    if (mode !== 'sub' || state !== 'playing' || helpUsed) return;
     helpUsed = true;
     clearTimeout(roundTimer);            // con ayuda no hay prisa: se para el tiempo
     pauseBar();
@@ -586,7 +586,7 @@
     elOp.setAttribute('aria-label', mode === 'sum' ? 'más' : 'menos');
     elMsg.hidden = true;
     resetHelp();
-    elHelpBtn.hidden = false;
+    elHelpBtn.hidden = mode === 'sum';   // en sumas, sin ayuda (solo en restas)
     buttons.forEach(function (btn, idx) {
       btn.className = 'opt';
       btn.textContent = opts[idx];
