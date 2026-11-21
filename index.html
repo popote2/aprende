@@ -191,7 +191,10 @@
         <div id="pModes"></div>
         <label class="p-check" style="margin-top:12px"><input type="checkbox" id="pRoach">
           <span>Cucaracha sorpresa: de vez en cuando cruza la pantalla corriendo. Si la toca, dice «¡Una cucaracha!»</span></label>
-        <button class="p-btn" type="button" id="pRoachNow" style="margin-top:8px">Que salga ahora</button>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+          <button class="p-btn" type="button" id="pRoachNow">Que salga ahora</button>
+          <button class="p-btn" type="button" id="pRoachVoice">Probar la voz 🔊</button>
+        </div>
       </section>
 
       <section class="p-card">
@@ -296,7 +299,7 @@
 
   <script src="palabras.js?v=45"></script>
   <script src="premios.js?v=45"></script>
-  <script src="app.js?v=52"></script>
+  <script src="app.js?v=53"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

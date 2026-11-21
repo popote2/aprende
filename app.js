@@ -197,7 +197,7 @@
   CLIPS['y'] = 'y';
   CLIPS['premio'] = '¡Un premio para ti!';
   CLIPS['premio-oro'] = '¡Una pegatina de oro!';
-  CLIPS['cucaracha'] = '¡Una cucaracha!';
+  CLIPS['cucaracha'] = '¡Ay! ¡Ay! ¡Una cucaracha!';
   CLIPS['album-completo'] = '¡Álbum completo! ¡Muy bien Inés!';
   CLIPS['album-nuevo'] = '¡Empieza un álbum nuevo!';
   // Nombres de las pegatinas (si no, nunca se descargan y no suenan)
@@ -2317,6 +2317,7 @@
     elRoach.checked = settings.roach !== false;
     elRoach.onchange = function () { settings.roach = elRoach.checked; saveSettings(); scheduleRoach(); };
     document.getElementById('pRoachNow').onclick = function () { roachRun(); };
+    document.getElementById('pRoachVoice').onclick = function () { play([{ clip: 'cucaracha', pitch: 1.3, rate: 1.1 }]); };
 
     // Letras
     var auto = !settings.letters || !settings.letters.length;
@@ -2497,7 +2498,7 @@
       if (fast) return;
       fast = true; pauseUntil = 0;
       el.classList.remove('still');
-      play([{ clip: 'cucaracha', pitch: 1.1, rate: 1 }]);
+      play([{ clip: 'cucaracha', pitch: 1.3, rate: 1.1 }]);
     });
     function frame(t) {
       if (!last) last = t;
