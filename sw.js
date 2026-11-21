@@ -4,9 +4,10 @@
 // Cambia CACHE si modificas la lista de archivos.
 importScripts('palabras.js', 'premios.js');   // palabras para leer y pegatinas
 
-var CACHE = 'sumas-v53';
+var CACHE = 'sumas-v54';
 // Grabaciones opcionales: se guardan si existen; si faltan no pasa nada
-var OPTIONAL = ['muy-bien', 'uy', 'quedan', 'son', 'premio', 'premio-oro', 'album-completo', 'album-nuevo', 'cucaracha'];
+var OPTIONAL = ['muy-bien', 'uy', 'quedan', 'son', 'premio', 'premio-oro', 'album-completo', 'album-nuevo', 'cucaracha', 'colores',
+  'w-rojo', 'w-azul', 'w-verde', 'w-amarillo', 'w-rosa', 'w-naranja', 'w-morado', 'w-marron', 'w-negro', 'w-blanco', 'w-gris'];
 for (var n = 0; n <= 10; n++) OPTIONAL.push('era-' + n, 'si-a-' + n, 'quito-' + n, 'pongo-' + n);
 self.PALABRAS.forEach(function (p) {
   var sils = p[0].split('-');

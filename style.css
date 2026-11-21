@@ -1244,3 +1244,33 @@ html, body {
 @keyframes roachLeg { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
 @keyframes roachAnt { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
 @media (prefers-reduced-motion: reduce) { .roach .rl, .roach.still .ant { animation: none; } }
+
+/* ---------- Colores ---------- */
+.mode-colors { background: #2a9d8f; box-shadow: 0 8px 0 #1d6f65; }
+.mode-colors .art-chip { color: #e5383b; }
+.art-dots { display: flex; gap: calc(var(--card) * .03); }
+.art-dots i { width: calc(var(--card) * .13); height: calc(var(--card) * .13); border-radius: 50%;
+  box-shadow: 0 0 0 calc(var(--card) * .012) #fff; }
+.colors { grid-template-rows: auto minmax(0, 1fr) minmax(25vh, auto); position: relative; }
+.c-blobs { display: flex; align-items: center; justify-content: space-around; gap: var(--gap); min-height: 0; }
+.c-blob { width: min(26vw, 30vh); aspect-ratio: 1; touch-action: none; cursor: grab; position: relative;
+  transition: opacity .25s ease; }
+.c-blob svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 6px 4px rgba(0, 0, 0, .2)); }
+.c-blob.drag { z-index: 50; cursor: grabbing; }
+.c-blob.back { transition: transform .3s ease, opacity .25s ease; }
+.c-blob.used { opacity: 0; pointer-events: none; }
+.c-words { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
+.c-word { display: flex; align-items: center; justify-content: center; min-height: 25vh; border-radius: clamp(18px, 4vmin, 40px);
+  background: #fff; color: var(--ink); font-weight: 900; box-shadow: 0 8px 0 #e6d3a0, inset 0 0 0 4px #f1d99a;
+  font-size: min(12vh, calc((100vw - 4 * var(--gap)) / 3 / (var(--len, 4) * .72)));
+  transition: background-color .25s ease, transform .15s ease; user-select: none; -webkit-user-select: none; }
+.c-word.over { transform: scale(1.06); box-shadow: 0 8px 0 #e6d3a0, inset 0 0 0 6px var(--blue); }
+.c-word.done { box-shadow: 0 8px 0 rgba(0, 0, 0, .2), inset 0 0 0 4px rgba(0, 0, 0, .12); }
+.c-word.hint { animation: glow .9s ease infinite alternate; }
+.c-word.nope { animation: wiggle .4s ease; }
+.c-word.lit { animation: litUp .5s ease both; }
+.colors > .msg { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 60; }
+@media (orientation: portrait) {
+  .c-blobs { flex-wrap: wrap; }
+  .c-blob { width: min(28vw, 22vh); }
+}

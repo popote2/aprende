@@ -20,10 +20,10 @@
 
   // Lo que más falla: { math: { '3 + 4': [aciertos, fallos] }, syl: {...}, word: {...} }
   var STATS_KEY = 'sumas.fallos';
-  var stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {} };
+  var stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {} };
   try {
     var savedStats = JSON.parse(localStorage.getItem(STATS_KEY));
-    if (savedStats) ['math', 'syl', 'word', 'build', 'trace', 'write', 'miss'].forEach(function (k) { if (savedStats[k]) stats[k] = savedStats[k]; });
+    if (savedStats) ['math', 'syl', 'word', 'build', 'trace', 'write', 'miss', 'color'].forEach(function (k) { if (savedStats[k]) stats[k] = savedStats[k]; });
   } catch (e) {}
   function record(cat, key, ok) {
     var e = stats[cat][key] || (stats[cat][key] = [0, 0]);
@@ -75,7 +75,8 @@
   var elScore2 = document.getElementById('score2');
   var elScore3 = document.getElementById('score3');
   var elScore4 = document.getElementById('score4');
-  elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = score;
+  var elScore5 = document.getElementById('score5');
+  elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = score;
 
   // Todas las operaciones posibles, para elegir de forma uniforme
   //  sumas:  a + b con resultado 0-10
@@ -157,7 +158,7 @@
     }
     savePrizes();
     updateAlbumDots();
-    [elScore, elScore2, elScore3, elScore4].forEach(function (el) {
+    [elScore, elScore2, elScore3, elScore4, elScore5].forEach(function (el) {
       el.textContent = score;
       var box = el.parentNode;
       box.classList.remove('bump');
@@ -197,6 +198,7 @@
   CLIPS['y'] = 'y';
   CLIPS['premio'] = '¡Un premio para ti!';
   CLIPS['premio-oro'] = '¡Una pegatina de oro!';
+  CLIPS['colores'] = 'Lleva cada color a su nombre.';
   CLIPS['cucaracha'] = '¡Ay! ¡Ay! ¡Una cucaracha!';
   CLIPS['album-completo'] = '¡Álbum completo! ¡Muy bien Inés!';
   CLIPS['album-nuevo'] = '¡Empieza un álbum nuevo!';
@@ -652,8 +654,10 @@
       elStart.hidden = true;
       elStart.style.display = 'none';   // por si el navegador tuviera un CSS antiguo
       unlockSound();
-      elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = true;
-      if (mode === 'sylq' || mode === 'wordq' || mode === 'build') {
+      elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = true;
+      if (mode === 'colors') {
+        startColors();
+      } else if (mode === 'sylq' || mode === 'wordq' || mode === 'build') {
         startQuiz(mode);
       } else if (mode === 'trace' || mode === 'tword' || mode === 'tmiss') {
         startTrace(mode);
@@ -687,6 +691,7 @@
     clearSylTimers();
     stopQuiz();
     stopTrace();
+    stopColors();
     elAlbum.hidden = true;
     elParents.hidden = true;
     applyModes();
@@ -2148,7 +2153,8 @@
                     ['build', '🧩 Forma palabras', 'ordena las sílabas', 'Letras'],
                     ['trace', '☝️ Traza letras', 'repasa letras con el dedo', 'Letras'],
                     ['tword', '✏️ Dictado', 'escribe lo que oye, letra a letra', 'Letras'],
-                    ['tmiss', '❓ Letra que falta', 'escribe la letra sin ayuda', 'Letras']];
+                    ['tmiss', '❓ Letra que falta', 'escribe la letra sin ayuda', 'Letras'],
+                    ['colors', '🎨 Colores', 'lleva cada color a su nombre', 'Letras']];
   var ALL_LETTERS = [];
   SILABAS.forEach(function (x) {
     var c = window.letrasDe(x[0])[0];
@@ -2390,7 +2396,7 @@
     var elStats = document.getElementById('pStats');
     elStats.innerHTML = '';
     var any = false;
-    [['math', 'Sumas y restas'], ['syl', 'Sílabas'], ['word', 'Palabras'], ['build', 'Formar palabras'], ['trace', 'Trazar letras'], ['write', 'Dictado'], ['miss', 'La letra que falta']].forEach(function (c) {
+    [['math', 'Sumas y restas'], ['syl', 'Sílabas'], ['word', 'Palabras'], ['build', 'Formar palabras'], ['trace', 'Trazar letras'], ['write', 'Dictado'], ['miss', 'La letra que falta'], ['color', 'Colores']].forEach(function (c) {
       var rows = Object.keys(stats[c[0]]).map(function (k) { return [k, stats[c[0]][k][0], stats[c[0]][k][1]]; })
         .filter(function (r) { return r[2] > 0; })
         .sort(function (a, b) { return (b[2] - a[2]) || (b[2] / (b[1] + b[2]) - a[2] / (a[1] + a[2])); })
@@ -2424,14 +2430,14 @@
       b.classList.remove('armed');
       var what = b.dataset.reset;
       if (what === 'stats') {
-        stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {} };
+        stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {} };
         try { localStorage.removeItem(STATS_KEY); } catch (e) {}
       } else if (what === 'stars') {
         score = 0;
         saveScore();
         prizes = { got: 0, stars: 0, gold: [] };
         savePrizes();
-        elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = score;
+        elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = score;
         updateAlbumDots();
       } else if (what === 'dict') {
         dict = { lvl: 1, good: 0, bad: 0 };
@@ -2445,6 +2451,170 @@
       renderParents();
     });
   });
+
+  // ---------- Colores: arrastrar cada mancha de color a su nombre ----------
+  // Las palabras van todas en el mismo color, para que haya que leerlas.
+  var COLORES = [['ROJO', '#e5383b'], ['AZUL', '#1e6fe0'], ['VERDE', '#1f9d45'], ['AMARILLO', '#ffd60a', 1],
+                 ['ROSA', '#ff7eb6', 1], ['NARANJA', '#ff8c1a'], ['MORADO', '#8338c9'], ['MARRÓN', '#8b5a2b'],
+                 ['NEGRO', '#222222'], ['BLANCO', '#ffffff', 1], ['GRIS', '#9aa0a6']];   // 1 = letra oscura encima
+  COLORES.forEach(function (c) { CLIPS[window.premioClip(c[0])] = c[0].toLowerCase(); });
+  var COLOR_N = 3;
+  var elColors = document.getElementById('colors');
+  var elCBlobs = document.getElementById('cBlobs');
+  var elCWords = document.getElementById('cWords');
+  var elCMsg = document.getElementById('cMsg');
+  var cRound = null;                 // { items, left, prize, misses }
+  var cTimers = [];
+  var cLastSet = '';
+  document.getElementById('home7').addEventListener('click', goHome);
+
+  function splatPath() {             // mancha de pintura: un círculo con bultos al azar
+    var n = 11, pts = [];
+    for (var k = 0; k < n; k++) {
+      var a = k / n * Math.PI * 2, r = 40 + Math.random() * 8 + (k % 2 ? 0 : 3);
+      pts.push([50 + r * Math.cos(a), 50 + r * Math.sin(a)]);
+    }
+    var d = '';
+    for (k = 0; k < n; k++) {      // curvas suaves entre puntos medios
+      var p = pts[k], q = pts[(k + 1) % n], m0 = [(pts[(k + n - 1) % n][0] + p[0]) / 2, (pts[(k + n - 1) % n][1] + p[1]) / 2];
+      var m1 = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      d += (k ? '' : 'M' + m0[0].toFixed(1) + ' ' + m0[1].toFixed(1)) + ' Q' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ' ' + m1[0].toFixed(1) + ' ' + m1[1].toFixed(1);
+    }
+    return d + 'Z';
+  }
+
+  function stopColors() {
+    cTimers.forEach(clearTimeout); cTimers = [];
+    cRound = null;
+    elColors.hidden = true;
+  }
+  function startColors() {
+    elColors.hidden = false;
+    colorRound(true);
+  }
+
+  function colorRound(first) {
+    cTimers.forEach(clearTimeout); cTimers = [];
+    var set;
+    do { set = shuffle(COLORES.slice()).slice(0, COLOR_N); }
+    while (set.map(function (c) { return c[0]; }).sort().join() === cLastSet);
+    cLastSet = set.map(function (c) { return c[0]; }).sort().join();
+    cRound = { items: set, left: set.length, prize: null, misses: {} };
+    elCMsg.hidden = true;
+    elCBlobs.innerHTML = '';
+    elCWords.innerHTML = '';
+    set.forEach(function (c) {
+      var b = document.createElement('div');
+      b.className = 'c-blob';
+      b.colorName = c[0];
+      b.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="' + splatPath() + '" fill="' + c[1] +
+        '" stroke="rgba(0,0,0,.18)" stroke-width="2"/></svg>';
+      b.addEventListener('pointerdown', blobDown);
+      elCBlobs.appendChild(b);
+    });
+    shuffle(set.slice()).forEach(function (c) {
+      var w = document.createElement('div');
+      w.className = 'c-word';
+      w.colorName = c[0];
+      w.colorHex = c[1];
+      w.colorDark = !!c[2];
+      w.textContent = c[0];
+      w.style.setProperty('--len', c[0].length);
+      elCWords.appendChild(w);
+    });
+    if (first) play([{ clip: 'colores', pitch: 1, rate: 1 }]);
+  }
+
+  function wordAt(x, y) {
+    var best = null, bd = Infinity;
+    Array.prototype.forEach.call(elCWords.children, function (w) {
+      if (w.classList.contains('done')) return;
+      var r = w.getBoundingClientRect();
+      var dx = Math.max(r.left - x, 0, x - r.right), dy = Math.max(r.top - y, 0, y - r.bottom);
+      var d = Math.hypot(dx, dy);
+      if (d < bd) { bd = d; best = w; }
+    });
+    return bd <= 40 ? best : null;   // un poco de margen alrededor de la palabra
+  }
+
+  function blobDown(e) {
+    if (!cRound || this.classList.contains('used')) return;
+    e.preventDefault();
+    unlockSound();
+    var b = this, round = cRound, id = e.pointerId, x0 = e.clientX, y0 = e.clientY, over = null;
+    try { b.setPointerCapture(id); } catch (err) {}
+    b.classList.remove('back');
+    b.classList.add('drag');
+    function move(ev) {
+      if (ev.pointerId !== id) return;
+      b.style.transform = 'translate(' + (ev.clientX - x0) + 'px,' + (ev.clientY - y0) + 'px) scale(1.12)';
+      var w = wordAt(ev.clientX, ev.clientY);
+      if (w !== over) { if (over) over.classList.remove('over'); over = w; if (w) w.classList.add('over'); }
+    }
+    function up(ev) {
+      if (ev.pointerId !== id) return;
+      b.removeEventListener('pointermove', move);
+      b.removeEventListener('pointerup', up);
+      b.removeEventListener('pointercancel', up);
+      if (over) over.classList.remove('over');
+      b.classList.remove('drag');
+      var w = ev.type === 'pointerup' ? wordAt(ev.clientX, ev.clientY) : null;
+      if (round !== cRound) return;
+      if (w && w.colorName === b.colorName) colorHit(b, w);
+      else {
+        b.classList.add('back');
+        b.style.transform = '';
+        if (w) colorMiss(b, w);
+      }
+    }
+    b.addEventListener('pointermove', move);
+    b.addEventListener('pointerup', up);
+    b.addEventListener('pointercancel', up);
+  }
+
+  function colorHit(b, w) {
+    var r = cRound, name = b.colorName;
+    b.classList.add('used');
+    b.style.transform = '';
+    w.classList.remove('hint');
+    w.classList.add('done');
+    w.style.background = w.colorHex;
+    w.style.color = w.colorDark ? 'var(--ink)' : '#fff';
+    bounce(w, 'lit');
+    var ok1 = !r.misses[name];
+    record('color', name, ok1);
+    var prize = addPoint();
+    if (prize) r.prize = prize;
+    r.left--;
+    var said = [{ clip: window.premioClip(name), pitch: 1, rate: 0.9 }];
+    if (r.left > 0) { play(said); return; }
+    // ronda terminada
+    elCMsg.className = 'msg';
+    elCMsg.textContent = '¡Muy bien Inés!';
+    elCMsg.hidden = false;
+    said.push({ clip: 'muy-bien', pitch: 1.1, rate: 1 });
+    var done = false;
+    function next() {
+      if (done || r !== cRound) return;
+      done = true;
+      if (r.prize) showReward(r.prize, function () { if (!elColors.hidden) colorRound(); });
+      else colorRound();
+    }
+    play(said, function () { cTimers.push(setTimeout(next, 700)); });
+    cTimers.push(setTimeout(next, 5000));
+  }
+
+  function colorMiss(b, w) {
+    var r = cRound, name = b.colorName;
+    r.misses[name] = (r.misses[name] || 0) + 1;
+    bounce(w, 'nope');
+    play([{ clip: 'uy', pitch: 1.1, rate: 1 }]);
+    if (r.misses[name] >= 2) {       // a la segunda, brilla su palabra
+      Array.prototype.forEach.call(elCWords.children, function (x) {
+        if (x.colorName === name) x.classList.add('hint');
+      });
+    }
+  }
 
   // ---------- Cucaracha sorpresa: de vez en cuando cruza la pantalla corriendo ----------
   // No tapa nada salvo a sí misma; si la toca, dice "¡Una cucaracha!" y sale disparada.
