@@ -1274,3 +1274,13 @@ html, body {
   .c-blobs { flex-wrap: wrap; }
   .c-blob { width: min(28vw, 22vh); }
 }
+
+/* ---------- Inglés ---------- */
+.mode-english { background: #3d5a80; box-shadow: 0 8px 0 #293d57; }
+.mode-english .art-chip { color: #3d5a80; }
+.quiz.english .opt { background: #fff; color: var(--blue); box-shadow: 0 8px 0 #e6d3a0, inset 0 0 0 4px #f1d99a; text-shadow: none; }
+.quiz.english .opt.correct { background: #c9f2d4; box-shadow: 0 8px 0 #1f9d45, inset 0 0 0 6px var(--green); }
+.quiz.english .opt.wrong { background: #e4e6e9; }
+.eng-pic { line-height: 1; }
+.eng-pic.num { font-weight: 900; }
+.eng-splat { width: 1.25em; height: 1.25em; display: block; margin: auto; filter: drop-shadow(0 4px 3px rgba(0, 0, 0, .2)); }

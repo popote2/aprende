@@ -9,7 +9,7 @@
   var STORAGE_KEY = 'sumas.aciertos';
   // Ajustes del rincón de padres (se guardan en este dispositivo)
   var SETTINGS_KEY = 'sumas.ajustes';
-  var settings = { timer: 20, maxNum: 10, letters: null, hiddenModes: [], myVoice: true, dictLevel: 0, roach: true };
+  var settings = { timer: 20, maxNum: 10, letters: null, hiddenModes: [], myVoice: true, dictLevel: 0, roach: true, engTheme: 0 };
   try {
     var savedSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY));
     if (savedSettings) Object.keys(settings).forEach(function (k) {
@@ -20,10 +20,10 @@
 
   // Lo que más falla: { math: { '3 + 4': [aciertos, fallos] }, syl: {...}, word: {...} }
   var STATS_KEY = 'sumas.fallos';
-  var stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {} };
+  var stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {} };
   try {
     var savedStats = JSON.parse(localStorage.getItem(STATS_KEY));
-    if (savedStats) ['math', 'syl', 'word', 'build', 'trace', 'write', 'miss', 'color'].forEach(function (k) { if (savedStats[k]) stats[k] = savedStats[k]; });
+    if (savedStats) ['math', 'syl', 'word', 'build', 'trace', 'write', 'miss', 'color', 'english'].forEach(function (k) { if (savedStats[k]) stats[k] = savedStats[k]; });
   } catch (e) {}
   function record(cat, key, ok) {
     var e = stats[cat][key] || (stats[cat][key] = [0, 0]);
@@ -199,6 +199,10 @@
   CLIPS['premio'] = '¡Un premio para ti!';
   CLIPS['premio-oro'] = '¡Una pegatina de oro!';
   CLIPS['colores'] = 'Lleva cada color a su nombre.';
+  CLIPS['ingles'] = 'Escucha en inglés y toca el dibujo.';
+  (window.INGLES || []).forEach(function (t) {
+    t[2].forEach(function (w) { CLIPS[window.inglesClip(w[0])] = w[0]; CLIPS[window.esClip(w[1])] = 'es ' + w[1] + '.'; });
+  });
   CLIPS['cucaracha'] = '¡Ay! ¡Ay! ¡Una cucaracha!';
   CLIPS['album-completo'] = '¡Álbum completo! ¡Muy bien Inés!';
   CLIPS['album-nuevo'] = '¡Empieza un álbum nuevo!';
@@ -657,7 +661,7 @@
       elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = true;
       if (mode === 'colors') {
         startColors();
-      } else if (mode === 'sylq' || mode === 'wordq' || mode === 'build') {
+      } else if (mode === 'sylq' || mode === 'wordq' || mode === 'build' || mode === 'english') {
         startQuiz(mode);
       } else if (mode === 'trace' || mode === 'tword' || mode === 'tmiss') {
         startTrace(mode);
@@ -1139,17 +1143,20 @@
     elQuiz.hidden = false;
     elQuiz.classList.toggle('words', m === 'wordq');
     elQuiz.classList.toggle('build', m === 'build');
+    elQuiz.classList.toggle('english', m === 'english');
+    engIntro = m === 'english';
     quizRound();
   }
 
   function quizRound() {
     quizTimers.forEach(clearTimeout); quizTimers = [];
     stopSound();
-    quizItem = quizMode === 'sylq' ? sylRound() : quizMode === 'build' ? buildRound() : wordRound();
+    quizItem = quizMode === 'sylq' ? sylRound() : quizMode === 'build' ? buildRound() : quizMode === 'english' ? engRound() : wordRound();
     quizLast = quizItem.answer;
     elQuizMsg.hidden = true;
-    elQuizEar.hidden = quizMode !== 'sylq';
-    elQuizPic.hidden = quizMode === 'sylq';
+    var earMode = quizMode === 'sylq' || quizMode === 'english';
+    elQuizEar.hidden = !earMode;
+    elQuizPic.hidden = earMode;
     elBuildSlots.hidden = quizMode !== 'build';
     if (quizMode === 'build') {
       elBuildSlots.className = 'build-slots';
@@ -1160,7 +1167,7 @@
         elBuildSlots.appendChild(sp);
       });
     }
-    if (quizMode !== 'sylq') {
+    if (!earMode) {
       elQuizPic.textContent = quizItem.answer.emoji;
       bounce(elQuizPic, 'cheer');
     }
@@ -1169,6 +1176,13 @@
       btn.className = 'opt';
       btn.hidden = !o;
       if (!o) return;
+      if (quizMode === 'english') {   // un dibujo: emoji, cifra o mancha de color
+        btn.innerHTML = engArt(o);
+        btn.setAttribute('aria-label', o.es);
+        btn.style.setProperty('--len', o.kind === 'num' ? Math.max(o.pic.length, 1.4) : 1.4);
+        btn.quizValue = o;
+        return;
+      }
       var text = quizMode === 'wordq' ? o.text : o;
       btn.textContent = '';
       if (quizMode === 'wordq') {
@@ -1192,6 +1206,7 @@
     fitQuiz();
     fitButtons();
     if (quizMode === 'sylq') askSyl();
+    if (quizMode === 'english') askEng();
     if (quizMode === 'build' || quizMode === 'wordq') sayBuildWord();   // dice la palabra del dibujo
   }
 
@@ -1206,6 +1221,7 @@
     quizLock = Date.now() + LOCK_MS;
     var ok = btn.quizValue === quizItem.answer;
     if (quizMode === 'sylq') record('syl', quizItem.answer, ok);
+    else if (quizMode === 'english') record('english', quizItem.answer.en, ok);
     else record('word', quizItem.answer.text, ok);
     quizButtons.forEach(function (b) {
       if (b.quizValue === quizItem.answer) b.classList.add('correct');
@@ -1227,6 +1243,16 @@
         quizLevel.hits = 0;
       }
       saveLevel();
+    } else if (quizMode === 'english') {
+      // "¡Muy bien Inés! Cat... es gato."  (al fallar: "¡Casi! Cat... es gato.")
+      var a = quizItem.answer;
+      list = [{ clip: ok ? 'muy-bien' : 'uy', pitch: 1.1, rate: 1 },
+              { clip: a.clip, pitch: 1, rate: 0.9 }, { clip: a.esClip, pitch: 1, rate: 0.95 }];
+      if (ok && !settings.engTheme && ++eng.hits >= ENG_PER_LEVEL && eng.lvl < ENG_THEMES.length) {
+        eng.lvl++;               // tema nuevo
+        eng.hits = 0;
+      }
+      saveEng();
     } else {
       list = [{ clip: ok ? 'muy-bien' : 'uy', pitch: 1.1, rate: 1 },
               { clip: quizItem.answer.clip, pitch: 1, rate: 0.9 }];
@@ -1250,7 +1276,8 @@
     if (quizState === 'playing' && (quizMode === 'build' || quizMode === 'wordq')) sayBuildWord();
   });
   elQuizEar.addEventListener('click', function () {
-    if (quizState === 'playing') askSyl();
+    if (quizState !== 'playing') return;
+    if (quizMode === 'english') askEng(); else askSyl();
   });
 
   document.addEventListener('visibilitychange', function () {
@@ -2154,7 +2181,8 @@
                     ['trace', '☝️ Traza letras', 'repasa letras con el dedo', 'Letras'],
                     ['tword', '✏️ Dictado', 'escribe lo que oye, letra a letra', 'Letras'],
                     ['tmiss', '❓ Letra que falta', 'escribe la letra sin ayuda', 'Letras'],
-                    ['colors', '🎨 Colores', 'lleva cada color a su nombre', 'Letras']];
+                    ['colors', '🎨 Colores', 'lleva cada color a su nombre', 'Letras'],
+                    ['english', '🇬🇧 Inglés', 'escucha en inglés y toca el dibujo', 'Letras']];
   var ALL_LETTERS = [];
   SILABAS.forEach(function (x) {
     var c = window.letrasDe(x[0])[0];
@@ -2310,6 +2338,15 @@
       ? 'Nivel fijo: ' + DICT_NAMES[settings.dictLevel] + '.'
       : 'Ahora está en: ' + DICT_NAMES[dict.lvl] + '. Sube tras 4 palabras seguidas sin ayuda y baja si necesita ayuda 3 veces seguidas.';
 
+    // Inglés
+    segmented(document.getElementById('pEng'),
+      [[0, 'Automático']].concat(ENG_THEMES.map(function (t, i) { return [i + 1, t.name]; })), settings.engTheme || 0,
+      function (v) { settings.engTheme = v; saveSettings(); renderParents(); });
+    document.getElementById('pEngNote').textContent = settings.engTheme
+      ? 'Tema fijo: ' + ENG_THEMES[settings.engTheme - 1].name.toLowerCase() + '.'
+      : 'Ahora tiene: ' + ENG_THEMES.slice(0, Math.min(eng.lvl, ENG_THEMES.length)).map(function (t) { return t.name.toLowerCase(); }).join(', ') +
+        '. Se abre un tema nuevo cada ' + ENG_PER_LEVEL + ' aciertos.';
+
     // Sumas y restas
     segmented(document.getElementById('pTimer'),
       [[10, '10 s'], [20, '20 s'], [30, '30 s'], [0, 'Sin tiempo']], settings.timer,
@@ -2396,7 +2433,7 @@
     var elStats = document.getElementById('pStats');
     elStats.innerHTML = '';
     var any = false;
-    [['math', 'Sumas y restas'], ['syl', 'Sílabas'], ['word', 'Palabras'], ['build', 'Formar palabras'], ['trace', 'Trazar letras'], ['write', 'Dictado'], ['miss', 'La letra que falta'], ['color', 'Colores']].forEach(function (c) {
+    [['math', 'Sumas y restas'], ['syl', 'Sílabas'], ['word', 'Palabras'], ['build', 'Formar palabras'], ['trace', 'Trazar letras'], ['write', 'Dictado'], ['miss', 'La letra que falta'], ['color', 'Colores'], ['english', 'Inglés']].forEach(function (c) {
       var rows = Object.keys(stats[c[0]]).map(function (k) { return [k, stats[c[0]][k][0], stats[c[0]][k][1]]; })
         .filter(function (r) { return r[2] > 0; })
         .sort(function (a, b) { return (b[2] - a[2]) || (b[2] / (b[1] + b[2]) - a[2] / (a[1] + a[2])); })
@@ -2430,7 +2467,7 @@
       b.classList.remove('armed');
       var what = b.dataset.reset;
       if (what === 'stats') {
-        stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {} };
+        stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {} };
         try { localStorage.removeItem(STATS_KEY); } catch (e) {}
       } else if (what === 'stars') {
         score = 0;
@@ -2439,6 +2476,9 @@
         savePrizes();
         elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = score;
         updateAlbumDots();
+      } else if (what === 'eng') {
+        eng = { lvl: 1, hits: 0 };
+        saveEng();
       } else if (what === 'dict') {
         dict = { lvl: 1, good: 0, bad: 0 };
         saveDict();
@@ -2451,6 +2491,48 @@
       renderParents();
     });
   });
+
+  // ---------- Inglés («Listen and touch»): oye una palabra en inglés y toca su dibujo ----------
+  var ENG_THEMES = (window.INGLES || []).map(function (t) {
+    return { name: t[0], items: t[2].map(function (w) {
+      return { en: w[0], es: w[1], pic: w[2], kind: t[1], clip: window.inglesClip(w[0]), esClip: window.esClip(w[1]) };
+    }) };
+  });
+  var ENG_KEY = 'sumas.ingles';
+  var ENG_PER_LEVEL = 12;            // aciertos para abrir el tema siguiente
+  var eng = { lvl: 1, hits: 0 };
+  try {
+    var engSaved = JSON.parse(localStorage.getItem(ENG_KEY));
+    if (engSaved && engSaved.lvl >= 1) eng = engSaved;
+  } catch (e) {}
+  function saveEng() { try { localStorage.setItem(ENG_KEY, JSON.stringify(eng)); } catch (e) {} }
+  var engIntro = false;
+
+  function engRound() {
+    var lvl = Math.min(eng.lvl, ENG_THEMES.length), themes;
+    if (settings.engTheme) themes = [ENG_THEMES[settings.engTheme - 1]];
+    else themes = ENG_THEMES.slice(0, lvl);
+    // en automático, la mitad de las veces sale el último tema abierto
+    var th = (!settings.engTheme && themes.length > 1 && Math.random() < 0.5) ? themes[themes.length - 1] : pick(themes);
+    var target;
+    do { target = pick(th.items); } while (quizLast && target.en === quizLast.en && th.items.length > 1);
+    var opts = [target].concat(shuffle(th.items.filter(function (w) { return w !== target; })).slice(0, 3));
+    return { answer: target, options: shuffle(opts), clip: target.clip };
+  }
+  function engArt(o) {
+    if (o.kind === 'color') {
+      return '<svg class="eng-splat" viewBox="0 0 100 100" aria-hidden="true"><path d="' + splatPath() + '" fill="' + o.pic +
+        '" stroke="rgba(0,0,0,.2)" stroke-width="2"/></svg>';
+    }
+    return '<span class="eng-pic' + (o.kind === 'num' ? ' num' : '') + '">' + o.pic + '</span>';
+  }
+  function askEng() {
+    bounce(elQuizEar, 'lit');
+    var list = [];
+    if (engIntro) { list.push({ clip: 'ingles', pitch: 1, rate: 1 }); engIntro = false; }
+    list.push({ clip: quizItem.clip, pitch: 1, rate: 0.9 });
+    play(list);
+  }
 
   // ---------- Colores: arrastrar cada mancha de color a su nombre ----------
   // Las palabras van todas en el mismo color, para que haya que leerlas.

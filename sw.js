@@ -2,9 +2,9 @@
 // - Con conexión: siempre descarga la versión más reciente y actualiza la caché.
 // - Sin conexión: sirve la copia guardada (la app funciona offline).
 // Cambia CACHE si modificas la lista de archivos.
-importScripts('palabras.js', 'premios.js');   // palabras para leer y pegatinas
+importScripts('palabras.js', 'premios.js', 'ingles.js');   // palabras para leer y pegatinas
 
-var CACHE = 'sumas-v54';
+var CACHE = 'sumas-v55';
 // Grabaciones opcionales: se guardan si existen; si faltan no pasa nada
 var OPTIONAL = ['muy-bien', 'uy', 'quedan', 'son', 'premio', 'premio-oro', 'album-completo', 'album-nuevo', 'cucaracha', 'colores',
   'w-rojo', 'w-azul', 'w-verde', 'w-amarillo', 'w-rosa', 'w-naranja', 'w-morado', 'w-marron', 'w-negro', 'w-blanco', 'w-gris'];
@@ -18,6 +18,10 @@ self.PALABRAS.forEach(function (p) {
 (self.PALABRAS_LARGAS || []).forEach(function (p) { OPTIONAL.push(self.palabraClip(p[0])); });
 (self.ALBUMES || []).forEach(function (a) {
   a[2].forEach(function (st) { OPTIONAL.push(self.premioClip(st[1])); });
+});
+OPTIONAL.push('ingles');
+(self.INGLES || []).forEach(function (t) {
+  t[2].forEach(function (w) { OPTIONAL.push(self.inglesClip(w[0]), self.esClip(w[1])); });
 });
 OPTIONAL.push('como-en');
 OPTIONAL.push('y');
@@ -39,6 +43,7 @@ var ASSETS = [
   './app.js',
   './palabras.js',
   './premios.js',
+  './ingles.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png'

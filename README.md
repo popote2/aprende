@@ -16,5 +16,8 @@ Las grabaciones de `audio/` se han generado con [Piper](https://github.com/OHF-V
 - Lectura y premios: voz «es_ES-sharvard-medium», entrenada con el corpus
   Sharvard (Universidad de Edimburgo, https://datashare.ed.ac.uk/handle/10283/574),
   licencia Creative Commons BY 3.0.
+- Inglés: voz «en_GB-cori-medium», con grabaciones de Cori Samuel para LibriVox
+  (Hi-Fi Multi-Speaker English TTS Dataset, NVIDIA, https://www.openslr.org/109/),
+  licencia Creative Commons BY 4.0.
 
 Ver `audio/LEEME.txt`.
