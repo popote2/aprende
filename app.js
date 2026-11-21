@@ -9,7 +9,7 @@
   var STORAGE_KEY = 'sumas.aciertos';
   // Ajustes del rincón de padres (se guardan en este dispositivo)
   var SETTINGS_KEY = 'sumas.ajustes';
-  var settings = { timer: 20, maxNum: 10, letters: null, hiddenModes: [], myVoice: true, dictLevel: 0 };
+  var settings = { timer: 20, maxNum: 10, letters: null, hiddenModes: [], myVoice: true, dictLevel: 0, roach: true };
   try {
     var savedSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY));
     if (savedSettings) Object.keys(settings).forEach(function (k) {
@@ -197,6 +197,7 @@
   CLIPS['y'] = 'y';
   CLIPS['premio'] = '¡Un premio para ti!';
   CLIPS['premio-oro'] = '¡Una pegatina de oro!';
+  CLIPS['cucaracha'] = '¡Una cucaracha!';
   CLIPS['album-completo'] = '¡Álbum completo! ¡Muy bien Inés!';
   CLIPS['album-nuevo'] = '¡Empieza un álbum nuevo!';
   // Nombres de las pegatinas (si no, nunca se descargan y no suenan)
@@ -2311,6 +2312,12 @@
       [[5, '5'], [10, '10']], settings.maxNum,
       function (v) { settings.maxNum = v; saveSettings(); });
 
+    // Cucaracha sorpresa
+    var elRoach = document.getElementById('pRoach');
+    elRoach.checked = settings.roach !== false;
+    elRoach.onchange = function () { settings.roach = elRoach.checked; saveSettings(); scheduleRoach(); };
+    document.getElementById('pRoachNow').onclick = function () { roachRun(); };
+
     // Letras
     var auto = !settings.letters || !settings.letters.length;
     var elAuto = document.getElementById('pAuto');
@@ -2437,6 +2444,89 @@
       renderParents();
     });
   });
+
+  // ---------- Cucaracha sorpresa: de vez en cuando cruza la pantalla corriendo ----------
+  // No tapa nada salvo a sí misma; si la toca, dice "¡Una cucaracha!" y sale disparada.
+  var ROACH_SVG = '<svg viewBox="-50 -32 100 64" aria-hidden="true">' +
+    '<g class="rl a" style="transform-origin:12px -8px"><path d="M12 -8 L22 -22 L32 -27"/></g>' +
+    '<g class="rl b" style="transform-origin:12px 8px"><path d="M12 8 L22 22 L32 27"/></g>' +
+    '<g class="rl b" style="transform-origin:-2px -10px"><path d="M-2 -10 L-6 -26 L-12 -31"/></g>' +
+    '<g class="rl a" style="transform-origin:-2px 10px"><path d="M-2 10 L-6 26 L-12 31"/></g>' +
+    '<g class="rl a" style="transform-origin:-16px -9px"><path d="M-16 -9 L-30 -22 L-42 -25"/></g>' +
+    '<g class="rl b" style="transform-origin:-16px 9px"><path d="M-16 9 L-30 22 L-42 25"/></g>' +
+    '<path class="ant" d="M34 -3 Q46 -10 50 -26 M34 3 Q46 10 50 26"/>' +
+    '<ellipse cx="-6" cy="0" rx="30" ry="14" fill="#6b3a1e"/>' +
+    '<path d="M-34 0 L18 0" stroke="#3e200e" stroke-width="1.6"/>' +
+    '<ellipse cx="-10" cy="-5" rx="16" ry="4" fill="#9a6036" opacity=".55"/>' +
+    '<ellipse cx="22" cy="0" rx="9" ry="11" fill="#84502a"/>' +
+    '<circle cx="32" cy="0" r="5.5" fill="#3b2010"/></svg>';
+  var roachTimer = null, roachOn = false;
+  function scheduleRoach(ms) {
+    clearTimeout(roachTimer);
+    if (settings.roach === false) return;
+    roachTimer = setTimeout(function () {
+      // nunca encima de un premio ni en el rincón de padres; se prueba un poco más tarde
+      if (document.hidden || rewardOpen || !elParents.hidden || roachOn) { scheduleRoach(20000); return; }
+      roachRun();
+    }, ms || (120 + Math.random() * 180) * 1000);   // entre 2 y 5 minutos
+  }
+  function roachRun() {
+    if (roachOn) return;
+    roachOn = true;
+    var W = window.innerWidth, H = window.innerHeight, size = Math.max(60, Math.min(W, H) * 0.16);
+    var el = document.createElement('div');
+    el.className = 'roach';
+    el.innerHTML = ROACH_SVG;
+    el.style.width = size + 'px';
+    el.style.height = (size * 0.64) + 'px';
+    document.body.appendChild(el);
+    // entra por un borde y sale por el contrario, dando un par de giros por el medio
+    var m = size, side = randInt(4);
+    function edge(sd) {
+      return sd === 0 ? [-m, H * (0.15 + Math.random() * 0.7)] : sd === 1 ? [W + m, H * (0.15 + Math.random() * 0.7)]
+           : sd === 2 ? [W * (0.15 + Math.random() * 0.7), -m] : [W * (0.15 + Math.random() * 0.7), H + m];
+    }
+    var pts = [edge(side)];
+    for (var k = 0; k < 2; k++) pts.push([W * (0.2 + Math.random() * 0.6), H * (0.2 + Math.random() * 0.6)]);
+    pts.push(edge(side ^ 1));
+    var speed = Math.min(W, H) * 0.7;          // píxeles por segundo
+    var seg = 1, pos = pts[0].slice(), ang = Math.atan2(pts[1][1] - pos[1], pts[1][0] - pos[0]);
+    var pauseUntil = 0, fast = false, last = 0;
+    el.addEventListener('pointerdown', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      if (fast) return;
+      fast = true; pauseUntil = 0;
+      el.classList.remove('still');
+      play([{ clip: 'cucaracha', pitch: 1.1, rate: 1 }]);
+    });
+    function frame(t) {
+      if (!last) last = t;
+      var dt = Math.min(0.05, (t - last) / 1000);
+      last = t;
+      if (t < pauseUntil) { requestAnimationFrame(frame); return; }
+      el.classList.remove('still');
+      var target = pts[seg], dx = target[0] - pos[0], dy = target[1] - pos[1], d = Math.hypot(dx, dy);
+      var step = speed * (fast ? 2.6 : 1) * dt;
+      // gira poco a poco hacia donde va, como un bicho de verdad
+      var want = Math.atan2(dy, dx), diff = Math.atan2(Math.sin(want - ang), Math.cos(want - ang));
+      ang += diff * Math.min(1, dt * 12);
+      if (d <= step) {
+        pos = target.slice();
+        seg++;
+        if (seg >= pts.length) { el.remove(); roachOn = false; scheduleRoach(); return; }
+        if (!fast && Math.random() < 0.6) {    // se para un momento y mueve las antenas
+          pauseUntil = t + 300 + Math.random() * 700;
+          el.classList.add('still');
+        }
+      } else {
+        pos[0] += dx / d * step; pos[1] += dy / d * step;
+      }
+      el.style.transform = 'translate(' + (pos[0] - size / 2) + 'px,' + (pos[1] - size * 0.32) + 'px) rotate(' + ang + 'rad)';
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  scheduleRoach((60 + Math.random() * 120) * 1000);   // la primera, entre 1 y 3 minutos
 
   // Si la app pasa a segundo plano, se detiene; al volver, empieza una suma nueva
   document.addEventListener('visibilitychange', function () {

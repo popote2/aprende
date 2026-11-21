@@ -1230,3 +1230,17 @@ html, body {
 .mode-tword .art-chip { color: #8a2f08; }
 .mode-tmiss .art-chip { color: #10504d; }
 .mode-tmiss .art-chip u { color: var(--red); }
+
+/* Cucaracha sorpresa */
+.roach { position: fixed; left: 0; top: 0; z-index: 9999; touch-action: none; cursor: pointer;
+  filter: drop-shadow(0 4px 3px rgba(0, 0, 0, .25)); will-change: transform; }
+.roach svg { width: 100%; height: 100%; overflow: visible; }
+.roach .rl path, .roach .ant { fill: none; stroke: #3b2010; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.roach .ant { stroke-width: 1.6; }
+.roach .rl.a { animation: roachLeg .11s linear infinite alternate; }
+.roach .rl.b { animation: roachLeg .11s linear infinite alternate-reverse; }
+.roach.still .rl { animation-play-state: paused; }
+.roach.still .ant { animation: roachAnt .25s ease-in-out infinite alternate; transform-origin: 34px 0; }
+@keyframes roachLeg { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
+@keyframes roachAnt { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+@media (prefers-reduced-motion: reduce) { .roach .rl, .roach.still .ant { animation: none; } }
