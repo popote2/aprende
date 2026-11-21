@@ -1284,3 +1284,6 @@ html, body {
 .eng-pic { line-height: 1; }
 .eng-pic.num { font-weight: 900; }
 .eng-splat { width: 1.25em; height: 1.25em; display: block; margin: auto; filter: drop-shadow(0 4px 3px rgba(0, 0, 0, .2)); }
+
+/* Bandera dibujada (algunos sistemas, como Windows, no tienen emojis de banderas) */
+.art-flag { display: block; width: 1.3em; height: .65em; border-radius: .06em; box-shadow: 0 0 0 .03em #fff, 0 .04em .08em rgba(0, 0, 0, .3); }

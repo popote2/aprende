@@ -2182,7 +2182,7 @@
                     ['tword', '✏️ Dictado', 'escribe lo que oye, letra a letra', 'Letras'],
                     ['tmiss', '❓ Letra que falta', 'escribe la letra sin ayuda', 'Letras'],
                     ['colors', '🎨 Colores', 'lleva cada color a su nombre', 'Letras'],
-                    ['english', '🇬🇧 Inglés', 'escucha en inglés y toca el dibujo', 'Letras']];
+                    ['english', '🔤 Inglés', 'escucha en inglés y toca el dibujo', 'Letras']];
   var ALL_LETTERS = [];
   SILABAS.forEach(function (x) {
     var c = window.letrasDe(x[0])[0];
