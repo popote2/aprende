@@ -196,6 +196,13 @@
   CLIPS['como-en'] = 'Como en...';
   CLIPS['y'] = 'y';
   CLIPS['premio'] = '¡Un premio para ti!';
+  CLIPS['premio-oro'] = '¡Una pegatina de oro!';
+  CLIPS['album-completo'] = '¡Álbum completo! ¡Muy bien Inés!';
+  CLIPS['album-nuevo'] = '¡Empieza un álbum nuevo!';
+  // Nombres de las pegatinas (si no, nunca se descargan y no suenan)
+  (window.ALBUMES || []).forEach(function (a) {
+    a[2].forEach(function (st) { CLIPS[window.premioClip(st[1])] = st[1] + '.'; });
+  });
   SILABAS.forEach(function (x) {
     var syl = x[0].toLowerCase(), ls = window.letrasDe(syl);
     CLIPS[window.silabaClip([x[0]], 0)] = 'La ' + (LETRAS[ls[0]] || ls[0]) + ' con la ' + ls[1] + ', ' + syl + '.';
