@@ -1312,3 +1312,15 @@ html, body {
   .b-ear { width: min(16vh, 30vw); height: min(16vh, 30vw); }
   .b-fig { height: auto; flex: 1 1 0; width: 100%; }
 }
+
+.b-word { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15em;
+  min-width: min(25vh, 22vw); padding: .3em .5em; border-radius: clamp(18px, 4vmin, 40px); background: #fff;
+  box-shadow: 0 8px 0 #1f9d45, inset 0 0 0 6px var(--green); color: var(--ink); line-height: 1; }
+.b-word b { font-size: min(13vh, 9vw); font-weight: 900; letter-spacing: .04em; }
+.b-word span { font-size: min(6vh, 4.5vw); font-weight: 700; color: #6b5a2e; }
+.b-word.lit { animation: litUp .5s ease both; }
+@media (orientation: portrait) {
+  .b-word { min-width: 0; }
+  .b-word b { font-size: min(9vh, 13vw); }
+  .b-word span { font-size: min(4.5vh, 6vw); }
+}

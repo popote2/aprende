@@ -2582,6 +2582,7 @@
   var elBRings = elBFig.querySelector('.b-rings');
   var elBEar = document.getElementById('bEar');
   var elBMsg = document.getElementById('bMsg');
+  var elBWord = document.getElementById('bWord');
   var BODY_PARTS = (window.CUERPO || []).map(function (p) { return { en: p[0], es: p[1], lvl: p[3] }; });
   var BODY_KEY = 'sumas.cuerpo';
   var BODY_PER_LEVEL = 12;           // aciertos para añadir el resto de partes
@@ -2610,6 +2611,8 @@
   function bodyRound(first) {
     bTimers.forEach(clearTimeout); bTimers = [];
     elBMsg.hidden = true;
+    elBWord.hidden = true;
+    elBEar.hidden = false;
     elBRings.innerHTML = '';
     var pool = BODY_PARTS.filter(function (p) { return p.lvl <= body.lvl; });
     var t;
@@ -2658,6 +2661,12 @@
     if (++body.hits >= BODY_PER_LEVEL && body.lvl < 2) { body.lvl++; body.hits = 0; }
     saveBody();
     bodyRings(t.en, 'ok');
+    // la palabra escrita, en el sitio del altavoz (así no tapa el dibujo)
+    elBWord.firstChild.textContent = t.en.toUpperCase();
+    elBWord.lastChild.textContent = t.es;
+    elBEar.hidden = true;
+    elBWord.hidden = false;
+    bounce(elBWord, 'lit');
     elBMsg.className = 'msg';
     elBMsg.textContent = '¡Muy bien Inés!';
     elBMsg.hidden = false;
