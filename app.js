@@ -2313,6 +2313,13 @@
   }
 
   function renderParents() {
+    // Estado del sonido (para averiguar por qué no suena algo)
+    var names = Object.keys(CLIPS), got = names.filter(function (n) { return available[n]; }).length;
+    var dec = names.filter(function (n) { return buffers[n]; }).length;
+    var miss = ['ingles', 'en-cat', 'es-gato', 'cuerpo', 'bt-nose', 'colores', 'muy-bien'].filter(function (n) { return !available[n]; });
+    document.getElementById('pAudio').textContent = 'Sonido: ' + got + ' de ' + names.length + ' audios descargados, ' + dec +
+      ' preparados · motor: ' + (audioCtx ? audioCtx.state : (AC ? 'sin iniciar' : 'no hay')) +
+      (htmlAudio ? ' · respaldo: sí' : ' · respaldo: no') + (miss.length ? ' · faltan: ' + miss.join(', ') : ' · inglés: ok');
     // Juegos activados
     var elModes = document.getElementById('pModes');
     elModes.innerHTML = '';
@@ -2667,9 +2674,6 @@
     elBEar.hidden = true;
     elBWord.hidden = false;
     bounce(elBWord, 'lit');
-    elBMsg.className = 'msg';
-    elBMsg.textContent = '¡Muy bien Inés!';
-    elBMsg.hidden = false;
     var done = false;
     function next() {
       if (done || r !== bRound) return;
