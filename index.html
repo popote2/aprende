@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=59">
+  <link rel="stylesheet" href="style.css?v=60">
 </head>
 <body>
   <main class="app" id="game">
@@ -143,6 +143,68 @@
     <section class="c-blobs" id="cBlobs"></section>
     <section class="c-words" id="cWords"></section>
     <div class="msg" id="cMsg" hidden></div>
+  </main>
+
+  <!-- «Touch your nose!»: oye una parte del cuerpo en inglés y la toca en el dibujo -->
+  <main class="app bodyg" id="bodyGame" hidden>
+    <header class="top">
+      <button class="home" id="home8" type="button" aria-label="Volver al inicio">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 2.8 11a1 1 0 0 0 1.3 1.5l.9-.8V20a1 1 0 0 0 1 1h4v-5.5h4V21h4a1 1 0 0 0 1-1v-8.3l.9.8a1 1 0 0 0 1.3-1.5z"/></svg>
+      </button>
+      <div class="top-space"></div>
+      <div class="score" aria-label="Aciertos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5-4.9-4.6 6.6-.8z"/></svg>
+        <span id="score6">0</span>
+      </div>
+    </header>
+    <section class="b-stage">
+      <button class="quiz-ear b-ear" id="bEar" type="button" aria-label="Escuchar otra vez">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+      </button>
+      <svg id="bFig" class="b-fig" viewBox="0 0 200 320">
+        <g class="b-art" stroke="#5b3a22" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M60 128 L28 196" stroke="#e8b48c" stroke-width="18"/>
+          <path d="M140 128 L172 196" stroke="#e8b48c" stroke-width="18"/>
+          <path d="M60 128 L28 196" stroke="#f6cfae" stroke-width="14"/>
+          <path d="M140 128 L172 196" stroke="#f6cfae" stroke-width="14"/>
+          <circle cx="26" cy="206" r="13" fill="#f6cfae"/>
+          <circle cx="174" cy="206" r="13" fill="#f6cfae"/>
+          <rect x="75" y="224" width="20" height="66" rx="8" fill="#f6cfae"/>
+          <rect x="105" y="224" width="20" height="66" rx="8" fill="#f6cfae"/>
+          <path d="M60 290 Q58 280 72 281 L94 283 Q98 300 84 304 L64 304 Q56 302 60 290Z" fill="#e5383b"/>
+          <path d="M140 290 Q142 280 128 281 L106 283 Q102 300 116 304 L136 304 Q144 302 140 290Z" fill="#e5383b"/>
+          <path d="M70 206 L130 206 L134 238 L104 238 L100 226 L96 238 L66 238Z" fill="#1e6fe0"/>
+          <path d="M72 122 Q100 114 128 122 L146 140 L134 152 L132 212 L68 212 L66 152 L54 140Z" fill="#ffd60a"/>
+          <rect x="90" y="108" width="20" height="16" fill="#f6cfae"/>
+          <circle cx="52" cy="74" r="11" fill="#f6cfae"/>
+          <circle cx="148" cy="74" r="11" fill="#f6cfae"/>
+          <circle cx="100" cy="72" r="47" fill="#f6cfae"/>
+          <path d="M50 72 Q44 16 100 16 Q156 16 150 72 Q146 50 132 44 Q122 56 98 50 Q80 46 72 40 Q56 50 50 72Z" fill="#7a4a24"/>
+          <ellipse cx="82" cy="70" rx="8" ry="9" fill="#fff"/>
+          <ellipse cx="118" cy="70" rx="8" ry="9" fill="#fff"/>
+          <circle cx="83" cy="72" r="4.5" fill="#23324a" stroke="none"/>
+          <circle cx="119" cy="72" r="4.5" fill="#23324a" stroke="none"/>
+          <circle cx="70" cy="90" r="7" fill="#ff9fb3" stroke="none" opacity=".6"/>
+          <circle cx="130" cy="90" r="7" fill="#ff9fb3" stroke="none" opacity=".6"/>
+          <path d="M95 82 Q100 92 105 82" fill="none" stroke-width="2.4"/>
+          <path d="M86 98 Q100 112 114 98 Q100 104 86 98Z" fill="#e5383b"/>
+        </g>
+        <g class="b-hit" fill="#000" fill-opacity="0" stroke="#000" stroke-opacity="0">
+          <path data-part="tummy" d="M66 136 L134 136 L134 214 L66 214Z" stroke="none"/>
+          <path data-part="legs" d="M70 222 L130 222 L130 286 L70 286Z" stroke="none"/>
+          <path data-part="arms" d="M60 128 L30 190 M140 128 L170 190" fill="none" stroke-width="30"/>
+          <path data-part="hair" d="M46 66 Q38 8 100 8 Q162 8 154 66 Q146 46 132 40 Q122 52 98 46 Q80 42 72 36 Q56 46 46 66Z" stroke="none"/>
+          <path data-part="ears" d="M52 74 m-17 0 a17 17 0 1 0 34 0 a17 17 0 1 0 -34 0 M148 74 m-17 0 a17 17 0 1 0 34 0 a17 17 0 1 0 -34 0" stroke="none"/>
+          <path data-part="eyes" d="M82 70 m-13 0 a13 12 0 1 0 26 0 a13 12 0 1 0 -26 0 M118 70 m-13 0 a13 12 0 1 0 26 0 a13 12 0 1 0 -26 0" stroke="none"/>
+          <ellipse data-part="nose" cx="100" cy="86" rx="11" ry="8" stroke="none"/>
+          <ellipse data-part="mouth" cx="100" cy="103" rx="20" ry="9" stroke="none"/>
+          <path data-part="hands" d="M26 206 m-21 0 a21 21 0 1 0 42 0 a21 21 0 1 0 -42 0 M174 206 m-21 0 a21 21 0 1 0 42 0 a21 21 0 1 0 -42 0" stroke="none"/>
+          <path data-part="feet" d="M54 284 L98 284 L98 314 L54 314Z M102 284 L146 284 L146 314 L102 314Z" stroke="none"/>
+        </g>
+        <g class="b-rings" fill="none" stroke-width="5"></g>
+      </svg>
+    </section>
+    <div class="msg" id="bMsg" hidden></div>
   </main>
 
   <!-- Álbumes de premios: una pegatina nueva cada 10 estrellas -->
@@ -278,6 +340,7 @@
           <button class="p-btn" type="button" data-reset="level">Volver a empezar el nivel de sílabas (M, P y L)</button>
           <button class="p-btn" type="button" data-reset="dict">Volver a empezar el dictado (copia)</button>
           <button class="p-btn" type="button" data-reset="eng">Volver a empezar el inglés (colores)</button>
+          <button class="p-btn" type="button" data-reset="body">Volver a empezar «Touch your nose» (6 partes)</button>
         </div>
       </section>
 
@@ -342,14 +405,18 @@
           <span class="mode-art"><span class="art-emoji"><svg class="art-flag" viewBox="0 0 60 30" aria-hidden="true"><clipPath id="ukClip"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#ukClip)" stroke="#c8102e" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/></svg></span><span class="art-chip">CAT</span></span>
           <span class="mode-name">Inglés</span>
         </button>
+        <button class="mode mode-body" type="button" data-mode="body" aria-label="Touch your nose: toca la parte del cuerpo">
+          <span class="mode-art"><span class="art-emoji">👃</span><span class="art-chip">NOSE</span></span>
+          <span class="mode-name">Touch your nose</span>
+        </button>
       </div>
     </div>
   </div>
 
   <script src="palabras.js?v=45"></script>
   <script src="premios.js?v=45"></script>
-  <script src="ingles.js?v=55"></script>
-  <script src="app.js?v=59"></script>
+  <script src="ingles.js?v=60"></script>
+  <script src="app.js?v=60"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

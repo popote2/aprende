@@ -31,3 +31,12 @@ self.INGLES = [
 self.inglesClip = function (en) { return 'en-' + en.replace(/ /g, '-'); };
 // "es gato." en español (mismas reglas que premioClip: sin tildes, ñ -> ny)
 self.esClip = function (es) { return self.premioClip(es).replace(/^w-/, 'es-'); };
+
+// «Touch your nose!»: partes del cuerpo. [inglés, español con artículo, plural, nivel]
+// Audios: bt-<parte> ("Touch your nose!"), bn-<parte> ("nose."), be-<parte> ("es la nariz.").
+self.CUERPO = [
+  ['nose', 'la nariz', false, 1], ['eyes', 'los ojos', true, 1], ['mouth', 'la boca', false, 1],
+  ['hands', 'las manos', true, 1], ['feet', 'los pies', true, 1], ['tummy', 'la tripa', false, 1],
+  ['hair', 'el pelo', false, 2], ['ears', 'las orejas', true, 2], ['arms', 'los brazos', true, 2],
+  ['legs', 'las piernas', true, 2]
+];

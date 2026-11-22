@@ -20,10 +20,10 @@
 
   // Lo que más falla: { math: { '3 + 4': [aciertos, fallos] }, syl: {...}, word: {...} }
   var STATS_KEY = 'sumas.fallos';
-  var stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {} };
+  var stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {}, body: {} };
   try {
     var savedStats = JSON.parse(localStorage.getItem(STATS_KEY));
-    if (savedStats) ['math', 'syl', 'word', 'build', 'trace', 'write', 'miss', 'color', 'english'].forEach(function (k) { if (savedStats[k]) stats[k] = savedStats[k]; });
+    if (savedStats) ['math', 'syl', 'word', 'build', 'trace', 'write', 'miss', 'color', 'english', 'body'].forEach(function (k) { if (savedStats[k]) stats[k] = savedStats[k]; });
   } catch (e) {}
   function record(cat, key, ok) {
     var e = stats[cat][key] || (stats[cat][key] = [0, 0]);
@@ -76,7 +76,8 @@
   var elScore3 = document.getElementById('score3');
   var elScore4 = document.getElementById('score4');
   var elScore5 = document.getElementById('score5');
-  elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = score;
+  var elScore6 = document.getElementById('score6');
+  elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = score;
 
   // Todas las operaciones posibles, para elegir de forma uniforme
   //  sumas:  a + b con resultado 0-10
@@ -158,7 +159,7 @@
     }
     savePrizes();
     updateAlbumDots();
-    [elScore, elScore2, elScore3, elScore4, elScore5].forEach(function (el) {
+    [elScore, elScore2, elScore3, elScore4, elScore5, elScore6].forEach(function (el) {
       el.textContent = score;
       var box = el.parentNode;
       box.classList.remove('bump');
@@ -200,6 +201,12 @@
   CLIPS['premio-oro'] = '¡Una pegatina de oro!';
   CLIPS['colores'] = 'Lleva cada color a su nombre.';
   CLIPS['ingles'] = 'Escucha en inglés y toca el dibujo.';
+  CLIPS['cuerpo'] = 'Escucha en inglés y toca esa parte del cuerpo.';
+  (window.CUERPO || []).forEach(function (p) {
+    CLIPS['bt-' + p[0]] = 'Touch your ' + p[0] + '!';
+    CLIPS['bn-' + p[0]] = p[0];
+    CLIPS['be-' + p[0]] = (p[2] ? 'son ' : 'es ') + p[1] + '.';
+  });
   (window.INGLES || []).forEach(function (t) {
     t[2].forEach(function (w) { CLIPS[window.inglesClip(w[0])] = w[0]; CLIPS[window.esClip(w[1])] = 'es ' + w[1] + '.'; });
   });
@@ -658,9 +665,11 @@
       elStart.hidden = true;
       elStart.style.display = 'none';   // por si el navegador tuviera un CSS antiguo
       unlockSound();
-      elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = true;
+      elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = elBodyG.hidden = true;
       if (mode === 'colors') {
         startColors();
+      } else if (mode === 'body') {
+        startBody();
       } else if (mode === 'sylq' || mode === 'wordq' || mode === 'build' || mode === 'english') {
         startQuiz(mode);
       } else if (mode === 'trace' || mode === 'tword' || mode === 'tmiss') {
@@ -696,6 +705,7 @@
     stopQuiz();
     stopTrace();
     stopColors();
+    stopBody();
     elAlbum.hidden = true;
     elParents.hidden = true;
     applyModes();
@@ -2182,7 +2192,8 @@
                     ['tword', '✏️ Dictado', 'escribe lo que oye, letra a letra', 'Letras'],
                     ['tmiss', '❓ Letra que falta', 'escribe la letra sin ayuda', 'Letras'],
                     ['colors', '🎨 Colores', 'lleva cada color a su nombre', 'Letras'],
-                    ['english', '🔤 Inglés', 'escucha en inglés y toca el dibujo', 'Letras']];
+                    ['english', '🔤 Inglés', 'escucha en inglés y toca el dibujo', 'Letras'],
+                    ['body', '👃 Touch your nose', 'inglés: toca esa parte del cuerpo', 'Letras']];
   var ALL_LETTERS = [];
   SILABAS.forEach(function (x) {
     var c = window.letrasDe(x[0])[0];
@@ -2433,7 +2444,7 @@
     var elStats = document.getElementById('pStats');
     elStats.innerHTML = '';
     var any = false;
-    [['math', 'Sumas y restas'], ['syl', 'Sílabas'], ['word', 'Palabras'], ['build', 'Formar palabras'], ['trace', 'Trazar letras'], ['write', 'Dictado'], ['miss', 'La letra que falta'], ['color', 'Colores'], ['english', 'Inglés']].forEach(function (c) {
+    [['math', 'Sumas y restas'], ['syl', 'Sílabas'], ['word', 'Palabras'], ['build', 'Formar palabras'], ['trace', 'Trazar letras'], ['write', 'Dictado'], ['miss', 'La letra que falta'], ['color', 'Colores'], ['english', 'Inglés'], ['body', 'Touch your nose']].forEach(function (c) {
       var rows = Object.keys(stats[c[0]]).map(function (k) { return [k, stats[c[0]][k][0], stats[c[0]][k][1]]; })
         .filter(function (r) { return r[2] > 0; })
         .sort(function (a, b) { return (b[2] - a[2]) || (b[2] / (b[1] + b[2]) - a[2] / (a[1] + a[2])); })
@@ -2467,15 +2478,18 @@
       b.classList.remove('armed');
       var what = b.dataset.reset;
       if (what === 'stats') {
-        stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {} };
+        stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {}, body: {} };
         try { localStorage.removeItem(STATS_KEY); } catch (e) {}
       } else if (what === 'stars') {
         score = 0;
         saveScore();
         prizes = { got: 0, stars: 0, gold: [] };
         savePrizes();
-        elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = score;
+        elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = score;
         updateAlbumDots();
+      } else if (what === 'body') {
+        body = { lvl: 1, hits: 0 };
+        saveBody();
       } else if (what === 'eng') {
         eng = { lvl: 1, hits: 0 };
         saveEng();
@@ -2493,7 +2507,7 @@
   });
 
   // ---------- Pasar el progreso a otro aparato: un código de texto, sin servidor ----------
-  var SAVE_KEYS = [STORAGE_KEY, SETTINGS_KEY, STATS_KEY, PRIZE_KEY, SYL_KEY, QUIZ_LEVEL_KEY, TRACE_KEY, DICT_KEY, 'sumas.ingles'];
+  var SAVE_KEYS = [STORAGE_KEY, SETTINGS_KEY, STATS_KEY, PRIZE_KEY, SYL_KEY, QUIZ_LEVEL_KEY, TRACE_KEY, DICT_KEY, 'sumas.ingles', 'sumas.cuerpo'];
   var CODE_PREFIX = 'APRENDE1-';
   function makeCode() {
     var data = {};
@@ -2561,6 +2575,106 @@
       setTimeout(function () { location.reload(); }, 600);
     });
   })();
+
+  // ---------- «Touch your nose!»: oye una parte del cuerpo en inglés y la toca en el dibujo ----------
+  var elBodyG = document.getElementById('bodyGame');
+  var elBFig = document.getElementById('bFig');
+  var elBRings = elBFig.querySelector('.b-rings');
+  var elBEar = document.getElementById('bEar');
+  var elBMsg = document.getElementById('bMsg');
+  var BODY_PARTS = (window.CUERPO || []).map(function (p) { return { en: p[0], es: p[1], lvl: p[3] }; });
+  var BODY_KEY = 'sumas.cuerpo';
+  var BODY_PER_LEVEL = 12;           // aciertos para añadir el resto de partes
+  // dónde brilla cada parte (centros en el dibujo; dos si son pares)
+  var BODY_SPOTS = { nose: [[100, 86, 10]], eyes: [[82, 70, 13], [118, 70, 13]], mouth: [[100, 103, 16]],
+    hands: [[26, 206, 18], [174, 206, 18]], feet: [[78, 294, 20], [122, 294, 20]], tummy: [[100, 172, 30]],
+    hair: [[100, 30, 26]], ears: [[52, 74, 14], [148, 74, 14]], arms: [[44, 162, 16], [156, 162, 16]],
+    legs: [[85, 256, 16], [115, 256, 16]] };
+  var body = { lvl: 1, hits: 0 };
+  try {
+    var bodySaved = JSON.parse(localStorage.getItem(BODY_KEY));
+    if (bodySaved && bodySaved.lvl >= 1) body = bodySaved;
+  } catch (e) {}
+  function saveBody() { try { localStorage.setItem(BODY_KEY, JSON.stringify(body)); } catch (e) {} }
+  var bRound = null, bLast = null, bTimers = [];
+
+  function stopBody() {
+    bTimers.forEach(clearTimeout); bTimers = [];
+    bRound = null;
+    elBodyG.hidden = true;
+  }
+  function startBody() {
+    elBodyG.hidden = false;
+    bodyRound(true);
+  }
+  function bodyRound(first) {
+    bTimers.forEach(clearTimeout); bTimers = [];
+    elBMsg.hidden = true;
+    elBRings.innerHTML = '';
+    var pool = BODY_PARTS.filter(function (p) { return p.lvl <= body.lvl; });
+    var t;
+    do { t = pick(pool); } while (bLast && t.en === bLast && pool.length > 1);
+    bLast = t.en;
+    bRound = { part: t, misses: 0, busy: false };
+    askBody(first);
+  }
+  function askBody(intro) {
+    if (!bRound) return;
+    bounce(elBEar, 'lit');
+    var list = [];
+    if (intro) list.push({ clip: 'cuerpo', pitch: 1, rate: 1 });
+    list.push({ clip: 'bt-' + bRound.part.en, pitch: 1, rate: 0.9 });
+    play(list);
+  }
+  function bodyRings(part, cls) {   // círculos que brillan sobre la parte
+    elBRings.innerHTML = '';
+    (BODY_SPOTS[part] || []).forEach(function (c) {
+      var r = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      r.setAttribute('cx', c[0]); r.setAttribute('cy', c[1]); r.setAttribute('r', c[2]);
+      r.setAttribute('class', 'b-ring ' + cls);
+      elBRings.appendChild(r);
+    });
+  }
+  elBEar.addEventListener('click', function () {
+    unlockSound();
+    if (bRound && !bRound.busy) askBody(false);
+  });
+  elBFig.addEventListener('pointerdown', function (e) {
+    var hit = e.target.closest && e.target.closest('[data-part]');
+    if (!hit || !bRound || bRound.busy) return;   // fuera de las partes: no cuenta
+    e.preventDefault();
+    unlockSound();
+    var r = bRound, part = hit.getAttribute('data-part'), t = r.part;
+    if (part !== t.en) {
+      r.misses++;
+      bounce(elBFig, 'nope');
+      if (r.misses >= 2) bodyRings(t.en, 'hint');   // a la segunda, brilla la parte buena
+      play([{ clip: 'uy', pitch: 1.1, rate: 1 }, { clip: 'bt-' + t.en, pitch: 1, rate: 0.9 }]);
+      return;
+    }
+    r.busy = true;
+    record('body', t.en, r.misses === 0);
+    var prize = addPoint();
+    if (++body.hits >= BODY_PER_LEVEL && body.lvl < 2) { body.lvl++; body.hits = 0; }
+    saveBody();
+    bodyRings(t.en, 'ok');
+    elBMsg.className = 'msg';
+    elBMsg.textContent = '¡Muy bien Inés!';
+    elBMsg.hidden = false;
+    var done = false;
+    function next() {
+      if (done || r !== bRound) return;
+      done = true;
+      elBMsg.hidden = true;
+      if (prize) showReward(prize, function () { if (!elBodyG.hidden) bodyRound(); });
+      else bodyRound();
+    }
+    // "¡Muy bien Inés! Nose... es la nariz."
+    play([{ clip: 'muy-bien', pitch: 1.1, rate: 1 }, { clip: 'bn-' + t.en, pitch: 1, rate: 0.9 },
+          { clip: 'be-' + t.en, pitch: 1, rate: 0.95 }], function () { bTimers.push(setTimeout(next, 600)); });
+    bTimers.push(setTimeout(next, 6000));
+  });
+  document.getElementById('home8').addEventListener('click', goHome);
 
   // ---------- Inglés («Listen and touch»): oye una palabra en inglés y toca su dibujo ----------
   var ENG_THEMES = (window.INGLES || []).map(function (t) {

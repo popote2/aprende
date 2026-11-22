@@ -1292,3 +1292,23 @@ html, body {
 .p-code { display: block; box-sizing: border-box; width: 100%; min-height: 70px; margin: 8px 0 0; padding: 8px 10px;
   font: 13px/1.35 ui-monospace, monospace; color: var(--ink); background: var(--bg); border: 2px solid #f1d99a;
   border-radius: 12px; resize: vertical; word-break: break-all; }
+
+/* ---------- «Touch your nose!» ---------- */
+.mode-body { background: #e76f51; box-shadow: 0 8px 0 #a94a33; }
+.mode-body .art-chip { color: #e76f51; }
+.bodyg { grid-template-rows: auto minmax(0, 1fr); position: relative; }
+.b-stage { display: flex; align-items: center; justify-content: center; gap: var(--gap); min-height: 0; }
+.b-ear { position: relative; inset: auto; margin: 0; flex: none; width: min(25vh, 22vw); height: min(25vh, 22vw); }
+.b-fig { height: 100%; max-width: 100%; min-height: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.b-fig [data-part] { cursor: pointer; }
+.b-fig.nope { animation: wiggle .4s ease; }
+.b-ring { stroke: var(--green); transform-box: fill-box; transform-origin: center; animation: ringIn .5s cubic-bezier(.2, 1.6, .4, 1) both; pointer-events: none; }
+.b-ring.hint { stroke: #ffb703; animation: ringPulse .8s ease infinite alternate; }
+@keyframes ringIn { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes ringPulse { from { transform: scale(.85); opacity: .5; } to { transform: scale(1.15); opacity: 1; } }
+.bodyg > .msg { position: absolute; left: 50%; top: 20%; transform: translate(-50%, -50%); z-index: 12; }
+@media (orientation: portrait) {
+  .b-stage { flex-direction: column; }
+  .b-ear { width: min(16vh, 30vw); height: min(16vh, 30vw); }
+  .b-fig { height: auto; flex: 1 1 0; width: 100%; }
+}
