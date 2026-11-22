@@ -1269,7 +1269,7 @@ html, body {
 .c-word.hint { animation: glow .9s ease infinite alternate; }
 .c-word.nope { animation: wiggle .4s ease; }
 .c-word.lit { animation: litUp .5s ease both; }
-.colors > .msg { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 60; }
+.colors > .msg { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 12; }
 @media (orientation: portrait) {
   .c-blobs { flex-wrap: wrap; }
   .c-blob { width: min(28vw, 22vh); }

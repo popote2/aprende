@@ -2679,6 +2679,7 @@
     function next() {
       if (done || r !== cRound) return;
       done = true;
+      elCMsg.hidden = true;   // que no tape el premio
       if (r.prize) showReward(r.prize, function () { if (!elColors.hidden) colorRound(); });
       else colorRound();
     }
