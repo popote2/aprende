@@ -2492,6 +2492,76 @@
     });
   });
 
+  // ---------- Pasar el progreso a otro aparato: un código de texto, sin servidor ----------
+  var SAVE_KEYS = [STORAGE_KEY, SETTINGS_KEY, STATS_KEY, PRIZE_KEY, SYL_KEY, QUIZ_LEVEL_KEY, TRACE_KEY, DICT_KEY, 'sumas.ingles'];
+  var CODE_PREFIX = 'APRENDE1-';
+  function makeCode() {
+    var data = {};
+    SAVE_KEYS.forEach(function (k) {
+      try { var v = localStorage.getItem(k); if (v !== null) data[k] = v; } catch (e) {}
+    });
+    var json = JSON.stringify(data);
+    return CODE_PREFIX + btoa(unescape(encodeURIComponent(json)));
+  }
+  function readCode(text) {   // devuelve los datos o null si el código no vale
+    var t = String(text || '').replace(/\s+/g, '');
+    var i = t.indexOf(CODE_PREFIX);
+    if (i < 0) return null;
+    try {
+      var data = JSON.parse(decodeURIComponent(escape(atob(t.slice(i + CODE_PREFIX.length)))));
+      if (!data || typeof data !== 'object') return null;
+      var out = {}, n = 0;
+      SAVE_KEYS.forEach(function (k) { if (typeof data[k] === 'string') { out[k] = data[k]; n++; } });
+      return n ? out : null;
+    } catch (e) { return null; }
+  }
+  function codeSummary(data) {
+    var stars = parseInt(data[STORAGE_KEY], 10) || 0, stick = 0;
+    try { stick = JSON.parse(data[PRIZE_KEY]).got || 0; } catch (e) {}
+    return stars + (stars === 1 ? ' estrella' : ' estrellas') + ' y ' + stick + (stick === 1 ? ' pegatina' : ' pegatinas');
+  }
+  (function () {
+    var elExp = document.getElementById('pExport'), elExpCode = document.getElementById('pExportCode'),
+        elExpNote = document.getElementById('pExportNote'), elImpCode = document.getElementById('pImportCode'),
+        elImp = document.getElementById('pImport'), elImpNote = document.getElementById('pImportNote');
+    function note(el, text) { el.textContent = text; el.hidden = false; }
+    elExp.addEventListener('click', function () {
+      var c = makeCode();
+      elExpCode.value = c;
+      elExpCode.hidden = false;
+      var sum = 'El código lleva ' + codeSummary(readCode(c)) + '.';
+      function shown() { elExpCode.focus(); elExpCode.select(); note(elExpNote, sum + ' Cópialo de aquí arriba.'); }
+      if (navigator.share) {          // en el móvil: directamente a WhatsApp, correo…
+        navigator.share({ text: c }).then(function () { note(elExpNote, sum + ' Enviado.'); }, shown);
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(c).then(function () { note(elExpNote, sum + ' Copiado: ya puedes pegarlo donde quieras.'); }, shown);
+      } else shown();
+    });
+    var armed = null, label = elImp.textContent;
+    function disarm() { clearTimeout(armed); armed = null; elImp.textContent = label; elImp.classList.remove('armed'); }
+    elImpCode.addEventListener('input', function () { disarm(); elImpNote.hidden = true; });
+    elImp.addEventListener('click', function () {
+      var data = readCode(elImpCode.value);
+      if (!data) { disarm(); note(elImpNote, 'Ese código no vale. Comprueba que lo has pegado entero (empieza por APRENDE1-).'); return; }
+      if (!armed) {
+        note(elImpNote, 'El código tiene ' + codeSummary(data) + '. Sustituirá a lo que hay en este aparato (' +
+          score + (score === 1 ? ' estrella' : ' estrellas') + ' y ' + prizes.got + (prizes.got === 1 ? ' pegatina' : ' pegatinas') + ').');
+        elImp.textContent = '¿Seguro? Toca otra vez';
+        elImp.classList.add('armed');
+        armed = setTimeout(disarm, 6000);
+        return;
+      }
+      disarm();
+      try {
+        SAVE_KEYS.forEach(function (k) {
+          if (k in data) localStorage.setItem(k, data[k]); else localStorage.removeItem(k);
+        });
+      } catch (e) { note(elImpNote, 'No se ha podido guardar en este aparato.'); return; }
+      note(elImpNote, 'Hecho ✓ Cargando…');
+      setTimeout(function () { location.reload(); }, 600);
+    });
+  })();
+
   // ---------- Inglés («Listen and touch»): oye una palabra en inglés y toca su dibujo ----------
   var ENG_THEMES = (window.INGLES || []).map(function (t) {
     return { name: t[0], items: t[2].map(function (w) {

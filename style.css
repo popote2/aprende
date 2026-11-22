@@ -1287,3 +1287,8 @@ html, body {
 
 /* Bandera dibujada (algunos sistemas, como Windows, no tienen emojis de banderas) */
 .art-flag { display: block; width: 1.3em; height: .65em; border-radius: .06em; box-shadow: 0 0 0 .03em #fff, 0 .04em .08em rgba(0, 0, 0, .3); }
+
+/* ---------- Copiar / pegar progreso ---------- */
+.p-code { display: block; box-sizing: border-box; width: 100%; min-height: 70px; margin: 8px 0 0; padding: 8px 10px;
+  font: 13px/1.35 ui-monospace, monospace; color: var(--ink); background: var(--bg); border: 2px solid #f1d99a;
+  border-radius: 12px; resize: vertical; word-break: break-all; }
