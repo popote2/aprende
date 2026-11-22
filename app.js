@@ -363,6 +363,8 @@
 
   // Reproduce una lista de frases seguidas: [{ clip, pitch, rate }]
   // Orden de preferencia: Web Audio -> <audio> -> voz sintética
+  var audioLog = [];          // últimos sonidos intentados (se ve en el Rincón de padres)
+  function logAudio(t) { audioLog.push(t); if (audioLog.length > 6) audioLog.shift(); }
   function play(list, onDone) {
     stopSound();
     resumeCtx();
@@ -385,6 +387,7 @@
           src.onended = next;
           currentSource = src;
           src.start(0);
+          logAudio(item.clip + ':motor');
           return;
         } catch (e) { /* probamos el siguiente método */ }
       }
@@ -392,8 +395,9 @@
       if (htmlAudio && (mineUrl || available[item.clip])) {
         var done = false;
         var go = function () { if (!done) { done = true; next(); } };
-        var fallback = function () {
+        var fallback = function (err) {
           if (done) return; done = true;
+          logAudio(item.clip + ':respaldo-falla(' + ((err && (err.name || err.type)) || '?') + ')→voz');
           speak(CLIPS[item.clip], item.pitch, item.rate, undefined, next);
         };
         try {
@@ -403,10 +407,12 @@
           htmlAudio.muted = false;
           var p = htmlAudio.play();
           if (p && p.catch) p.catch(fallback);
+          logAudio(item.clip + ':respaldo');
           return;
         } catch (e) { /* probamos la voz sintética */ }
       }
 
+      logAudio(item.clip + ':voz(' + (available[item.clip] ? 'hay' : 'sin descargar') + ',' + (synth ? 'sí' : 'no') + ')');
       speak(CLIPS[item.clip], item.pitch, item.rate, undefined, next);
     })();
   }
@@ -2316,10 +2322,15 @@
     // Estado del sonido (para averiguar por qué no suena algo)
     var names = Object.keys(CLIPS), got = names.filter(function (n) { return available[n]; }).length;
     var dec = names.filter(function (n) { return buffers[n]; }).length;
-    var miss = ['ingles', 'en-cat', 'es-gato', 'cuerpo', 'bt-nose', 'colores', 'muy-bien'].filter(function (n) { return !available[n]; });
+    var miss = ['en-', 'es-', 'bt-', 'bn-', 'be-', 'q-', 'w-'].map(function (pre) {
+      var all = names.filter(function (n) { return n.indexOf(pre) === 0; });
+      var no = all.filter(function (n) { return !available[n]; }).length;
+      return no ? pre + ' ' + no + '/' + all.length : '';
+    }).filter(Boolean);
     document.getElementById('pAudio').textContent = 'Sonido: ' + got + ' de ' + names.length + ' audios descargados, ' + dec +
       ' preparados · motor: ' + (audioCtx ? audioCtx.state : (AC ? 'sin iniciar' : 'no hay')) +
-      (htmlAudio ? ' · respaldo: sí' : ' · respaldo: no') + (miss.length ? ' · faltan: ' + miss.join(', ') : ' · inglés: ok');
+      (htmlAudio ? ' · respaldo: sí' : ' · respaldo: no') + (miss.length ? ' · faltan: ' + miss.join(', ') : ' · inglés: ok') +
+      (audioLog.length ? ' · últimos: ' + audioLog.join(' ; ') : ' · aún no ha sonado nada');
     // Juegos activados
     var elModes = document.getElementById('pModes');
     elModes.innerHTML = '';
