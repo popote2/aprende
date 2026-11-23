@@ -77,7 +77,8 @@
   var elScore4 = document.getElementById('score4');
   var elScore5 = document.getElementById('score5');
   var elScore6 = document.getElementById('score6');
-  elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = score;
+  var elScore7 = document.getElementById('score7');
+  elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = elScore7.textContent = score;
 
   // Todas las operaciones posibles, para elegir de forma uniforme
   //  sumas:  a + b con resultado 0-10
@@ -165,7 +166,7 @@
     }
     savePrizes();
     updateAlbumDots();
-    [elScore, elScore2, elScore3, elScore4, elScore5, elScore6].forEach(function (el) {
+    [elScore, elScore2, elScore3, elScore4, elScore5, elScore6, elScore7].forEach(function (el) {
       el.textContent = score;
       var box = el.parentNode;
       box.classList.remove('bump');
@@ -207,6 +208,10 @@
   CLIPS['premio-oro'] = '¡Una pegatina de oro!';
   CLIPS['colores'] = 'Lleva cada color a su nombre.';
   CLIPS['ingles'] = 'Escucha en inglés y toca el dibujo.';
+  if (window.dineroTextos) {
+    var dnT = window.dineroTextos();
+    Object.keys(dnT).forEach(function (k) { CLIPS[k] = dnT[k]; });
+  }
   CLIPS['cuerpo'] = 'Escucha en inglés y toca esa parte del cuerpo.';
   (window.CUERPO || []).forEach(function (p) {
     CLIPS['bt-' + p[0]] = 'Touch your ' + p[0] + '!';
@@ -677,8 +682,10 @@
       elStart.hidden = true;
       elStart.style.display = 'none';   // por si el navegador tuviera un CSS antiguo
       unlockSound();
-      elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = elBodyG.hidden = true;
-      if (mode === 'colors') {
+      elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = elBodyG.hidden = elMoney.hidden = true;
+      if (mode === 'money') {
+        startMoney();
+      } else if (mode === 'colors') {
         startColors();
       } else if (mode === 'body') {
         startBody();
@@ -718,6 +725,7 @@
     stopTrace();
     stopColors();
     stopBody();
+    stopMoney();
     elAlbum.hidden = true;
     elParents.hidden = true;
     applyModes();
@@ -2195,6 +2203,7 @@
   var elAlbumBtn = document.getElementById('albumBtn');
   // [modo, nombre, explicación, grupo]
   var MODE_NAMES = [['sum', '➕ Sumas', '', 'Números'], ['sub', '➖ Restas', '', 'Números'],
+                    ['money', '💶 Mis euros', 'cuentas habladas: papá te da, te gastas…', 'Números'],
                     ['syl', 'MA Sílabas', 'ver y oír cada sílaba', 'Letras'],
                     ['sylq', '👂 Escucha y busca', 'oye una sílaba y la busca', 'Letras'],
                     ['read', 'CA SA Leer palabras', 'palabras por sílabas', 'Letras'],
@@ -2509,7 +2518,7 @@
         saveScore();
         prizes = { got: 0, stars: 0, gold: [] };
         savePrizes();
-        elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = score;
+        elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = elScore7.textContent = score;
         updateAlbumDots();
       } else if (what === 'body') {
         body = { lvl: 1, hits: 0 };
@@ -2606,6 +2615,130 @@
       setTimeout(function () { location.reload(); }, 600);
     });
   })();
+
+  // ---------- «Mis euros»: una historia que sigue (tienes 2, papá te da 3, te gastas 1 en un globo...) ----------
+  // Las cuentas son de oído: en pantalla solo sale quién da el dinero o qué se compra.
+  // Al acertar se ve el monedero con las monedas que tiene.
+  var elMoney = document.getElementById('money');
+  var elMEar = document.getElementById('mEar');
+  var elMPic = document.getElementById('mPic');
+  var elMPurse = document.getElementById('mPurse');
+  var mButtons = Array.prototype.slice.call(document.querySelectorAll('#mOpts .opt'));
+  var DN = window.DINERO || { personas: [], cosas: [], maxDa: 5 };
+  var m = null, mTimers = [], mIntro = false, mLastWho = null;
+
+  function mMax() { return Math.min(settings.maxNum || 10, 10); }
+  function stopMoney() {
+    mTimers.forEach(clearTimeout); mTimers = [];
+    m = null;
+    elMoney.hidden = true;
+  }
+  function startMoney() {
+    elMoney.hidden = false;
+    mIntro = true;
+    newStory(false);
+  }
+  function newStory(again) {
+    var max = mMax();
+    m = { total: 1 + randInt(Math.min(5, max - 1)), steps: 3 + randInt(2), step: 0, first: true, again: again };
+    moneyStep();
+  }
+  function moneyStep() {
+    mTimers.forEach(clearTimeout); mTimers = [];
+    var max = mMax(), t = m.total;
+    var spend = DN.cosas.filter(function (c) { return c[1] <= t; });
+    var canGive = t < max;
+    // a veces da, a veces gasta (sin repetir mucho lo mismo)
+    var give = canGive && (!spend.length || (m.last === 'spend' ? Math.random() < 0.7 : m.last === 'give' ? Math.random() < 0.3 : Math.random() < 0.5));
+    var it;
+    if (give) {
+      var who;
+      do { who = pick(DN.personas); } while (DN.personas.length > 1 && who[0] === mLastWho);
+      mLastWho = who[0];
+      var k = 1 + randInt(Math.min(DN.maxDa, max - t));
+      it = { clip: 'dn-da-' + who[0] + '-' + k, pic: who[2], answer: t + k, key: t + ' + ' + k };
+      m.last = 'give';
+    } else {
+      var c = pick(spend);
+      it = { clip: 'dn-gasta-' + c[0], pic: c[3], answer: t - c[1], key: t + ' − ' + c[1] };
+      m.last = 'spend';
+    }
+    it.misses = 0;
+    it.busy = false;
+    m.it = it;
+    elMPic.textContent = it.pic;
+    bounce(elMPic, 'lit');
+    elMPurse.innerHTML = '<span class="m-q">?</span>';
+    // tres números seguidos alrededor de la respuesta
+    var lo = Math.max(0, Math.min(it.answer - randInt(3), max - 2));
+    var vals = [lo, lo + 1, lo + 2];
+    mButtons.forEach(function (b, i) {
+      b.textContent = vals[i];
+      b.mValue = vals[i];
+      b.className = 'opt';
+      b.disabled = false;
+    });
+    askMoney(true);
+  }
+  function askMoney(full) {
+    if (!m || !m.it) return;
+    bounce(elMEar, 'lit');
+    var list = [];
+    if (full && mIntro) { list.push({ clip: 'dn-intro', pitch: 1, rate: 1 }); mIntro = false; }
+    if (full && m.again && m.first) list.push({ clip: 'dn-otra', pitch: 1.1, rate: 1 });
+    if (m.first) list.push({ clip: 'dn-st-' + m.total, pitch: 1, rate: 0.95 });
+    list.push({ clip: m.it.clip, pitch: 1, rate: 0.95 }, { clip: 'dn-cuantos', pitch: 1, rate: 1 });
+    play(list);
+  }
+  function showPurse(n) {
+    var h = '';
+    for (var k = 0; k < n; k++) h += '<span class="m-coin">1€</span>';
+    elMPurse.innerHTML = n ? h : '<span class="m-q">0</span>';
+  }
+  elMEar.addEventListener('click', function () {
+    unlockSound();
+    if (m && m.it && !m.it.busy) askMoney(false);
+  });
+  mButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (!m || !m.it || m.it.busy || b.disabled) return;
+      unlockSound();
+      var it = m.it, story = m;
+      if (b.mValue !== it.answer) {
+        it.misses++;
+        b.classList.add('wrong');
+        b.disabled = true;
+        if (it.misses >= 2) mButtons.forEach(function (x) { if (x.mValue === it.answer) x.classList.add('hint'); });
+        play([{ clip: 'uy', pitch: 1.1, rate: 1 }, { clip: it.clip, pitch: 1, rate: 0.95 }, { clip: 'dn-cuantos', pitch: 1, rate: 1 }]);
+        return;
+      }
+      it.busy = true;
+      b.classList.remove('hint');
+      b.classList.add('correct');
+      mButtons.forEach(function (x) { if (x !== b) x.classList.add('dim'); });
+      record('math', it.key + ' €', it.misses === 0);
+      var prize = addPoint();
+      story.total = it.answer;
+      story.first = false;
+      story.step++;
+      showPurse(story.total);
+      var done = false;
+      function next() {
+        if (done || story !== m) return;
+        done = true;
+        var go = function () {
+          if (story !== m) return;
+          if (story.step >= story.steps) newStory(true); else moneyStep();
+        };
+        if (prize) showReward(prize, function () { if (!elMoney.hidden) go(); });
+        else go();
+      }
+      play([{ clip: 'muy-bien', pitch: 1.1, rate: 1 }, { clip: 'dn-ahora-' + story.total, pitch: 1, rate: 0.95 }],
+        function () { mTimers.push(setTimeout(next, 900)); });
+      mTimers.push(setTimeout(next, 7000));
+    });
+  });
+  document.getElementById('home9').addEventListener('click', goHome);
 
   // ---------- «Touch your nose!»: oye una parte del cuerpo en inglés y la toca en el dibujo ----------
   var elBodyG = document.getElementById('bodyGame');
