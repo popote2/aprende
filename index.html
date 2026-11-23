@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=63">
+  <link rel="stylesheet" href="style.css?v=64">
 </head>
 <body>
   <main class="app" id="game">
@@ -319,17 +319,17 @@
 
       <section class="p-card">
         <h2>Pasar el progreso a otro aparato</h2>
-        <p class="p-note">Copia el código, mándatelo (WhatsApp, correo…) y pégalo en el Rincón de padres del otro aparato.
-          Lo que pegues <b>sustituye</b> al progreso que haya allí.</p>
+        <p class="p-note">Toca «Ver número», apunta las 6 cifras y escríbelas en el Rincón de padres del otro aparato.
+          Lo que escribas allí <b>sustituye</b> al progreso que haya.</p>
         <div class="p-list">
-          <button class="p-btn" type="button" id="pExport">Copiar progreso</button>
+          <button class="p-btn" type="button" id="pExport">Ver número</button>
         </div>
-        <textarea class="p-code" id="pExportCode" readonly hidden></textarea>
+        <p class="p-code" id="pExportCode" hidden></p>
         <p class="p-note" id="pExportNote" hidden></p>
-        <h3>Pegar progreso de otro aparato</h3>
-        <textarea class="p-code" id="pImportCode" placeholder="Pega aquí el código (empieza por APRENDE1-)"></textarea>
+        <h3>Traer el progreso de otro aparato</h3>
+        <input class="p-code p-codein" id="pImportCode" type="text" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="123-456">
         <div class="p-list">
-          <button class="p-btn" type="button" id="pImport">Pegar progreso</button>
+          <button class="p-btn" type="button" id="pImport">Usar este número</button>
         </div>
         <p class="p-note" id="pImportNote" hidden></p>
       </section>
@@ -418,7 +418,7 @@
   <script src="palabras.js?v=45"></script>
   <script src="premios.js?v=45"></script>
   <script src="ingles.js?v=60"></script>
-  <script src="app.js?v=63"></script>
+  <script src="app.js?v=64"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

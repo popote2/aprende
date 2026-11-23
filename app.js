@@ -145,6 +145,12 @@
 
   // Un acierto más: el contador es el mismo en todos los juegos.
   // Devuelve la pegatina nueva si con esta estrella se gana una.
+  // Qué pegatinas son de oro: fijo para cada pegatina (≈1 de cada 5), así es igual en todos los aparatos
+  function isGold(k) {
+    var x = Math.imul(k + 7, 0x9e3779b1) >>> 0;
+    x ^= x >>> 15; x = Math.imul(x, 0x45d9f3b) >>> 0; x ^= x >>> 16;
+    return x % 100 < GOLD_CHANCE * 100;
+  }
   function addPoint() {
     score++;
     saveScore();
@@ -152,7 +158,7 @@
     if (prizes.got < STICKERS.length && ++prizes.stars >= STARS_PER_STICKER) {
       prizes.stars = 0;
       var k = prizes.got++;
-      var gold = Math.random() < GOLD_CHANCE;
+      var gold = isGold(k);
       if (gold) prizes.gold.push(k);
       var st = STICKERS[k], al = ALBUMES[st.album];
       prize = { e: st.e, clip: st.clip, gold: gold, done: k === al.start + al.n - 1 ? st.album : -1 };
@@ -2524,71 +2530,78 @@
     });
   });
 
-  // ---------- Pasar el progreso a otro aparato: un código de texto, sin servidor ----------
-  var SAVE_KEYS = [STORAGE_KEY, SETTINGS_KEY, STATS_KEY, PRIZE_KEY, SYL_KEY, QUIZ_LEVEL_KEY, TRACE_KEY, DICT_KEY, 'sumas.ingles', 'sumas.cuerpo'];
-  var CODE_PREFIX = 'APRENDE1-';
+  // ---------- Pasar el progreso a otro aparato: un número de 6 cifras (123-456), sin servidor ----------
+  // Como no hay servidor, todo tiene que caber en el propio número: pegatinas, estrellas sueltas
+  // y los niveles (sílabas, dictado, inglés y cuerpo). No caben los ajustes ni la lista de fallos.
+  // Los números se "barajan" (multiplicando módulo un millón) para que parezcan al azar
+  // y para que un error al teclearlo dé casi siempre un número que no vale.
+  var CODE_MUL = 382547, CODE_INV = 313883, CODE_MOD = 1000000;
+  function codeRadix() {
+    return [STICKERS.length + 1, STARS_PER_STICKER, Math.max(ENG_THEMES.length, 1), 2, 3, Math.max(SYL_GROUPS.length, 1)];
+  }
+  function codeCap() { return codeRadix().reduce(function (a, b) { return a * b; }, 1); }
+  function clampInt(v, lo, hi) { v = Math.floor(Number(v) || 0); return Math.min(Math.max(v, lo), hi); }
   function makeCode() {
-    var data = {};
-    SAVE_KEYS.forEach(function (k) {
-      try { var v = localStorage.getItem(k); if (v !== null) data[k] = v; } catch (e) {}
-    });
-    var json = JSON.stringify(data);
-    return CODE_PREFIX + btoa(unescape(encodeURIComponent(json)));
+    var r = codeRadix();
+    var d = [clampInt(prizes.got, 0, r[0] - 1), clampInt(prizes.stars, 0, r[1] - 1), clampInt(eng.lvl, 1, r[2]) - 1,
+             clampInt(body.lvl, 1, r[3]) - 1, clampInt(dict.lvl, 1, r[4]) - 1, clampInt(quizLevel.groups, 1, r[5]) - 1];
+    var v = 0;
+    for (var k = r.length - 1; k >= 0; k--) v = v * r[k] + d[k];
+    var c = String((v * CODE_MUL) % CODE_MOD);
+    while (c.length < 6) c = '0' + c;
+    return c.slice(0, 3) + '-' + c.slice(3);
   }
-  function readCode(text) {   // devuelve los datos o null si el código no vale
-    var t = String(text || '').replace(/\s+/g, '');
-    var i = t.indexOf(CODE_PREFIX);
-    if (i < 0) return null;
-    try {
-      var data = JSON.parse(decodeURIComponent(escape(atob(t.slice(i + CODE_PREFIX.length)))));
-      if (!data || typeof data !== 'object') return null;
-      var out = {}, n = 0;
-      SAVE_KEYS.forEach(function (k) { if (typeof data[k] === 'string') { out[k] = data[k]; n++; } });
-      return n ? out : null;
-    } catch (e) { return null; }
+  function readCode(text) {   // devuelve el progreso o null si el número no vale
+    var t = String(text || '').replace(/\D/g, '');
+    if (t.length !== 6 || codeCap() > CODE_MOD) return null;
+    var v = (Number(t) * CODE_INV) % CODE_MOD;
+    if (v >= codeCap()) return null;
+    var r = codeRadix(), d = [];
+    for (var k = 0; k < r.length; k++) { d.push(v % r[k]); v = Math.floor(v / r[k]); }
+    return { got: d[0], stars: d[1], eng: d[2] + 1, body: d[3] + 1, dict: d[4] + 1, groups: d[5] + 1 };
   }
-  function codeSummary(data) {
-    var stars = parseInt(data[STORAGE_KEY], 10) || 0, stick = 0;
-    try { stick = JSON.parse(data[PRIZE_KEY]).got || 0; } catch (e) {}
-    return stars + (stars === 1 ? ' estrella' : ' estrellas') + ' y ' + stick + (stick === 1 ? ' pegatina' : ' pegatinas');
-  }
+  function nStars(n) { return n + (n === 1 ? ' estrella' : ' estrellas'); }
+  function nStick(n) { return n + (n === 1 ? ' pegatina' : ' pegatinas'); }
   (function () {
     var elExp = document.getElementById('pExport'), elExpCode = document.getElementById('pExportCode'),
         elExpNote = document.getElementById('pExportNote'), elImpCode = document.getElementById('pImportCode'),
         elImp = document.getElementById('pImport'), elImpNote = document.getElementById('pImportNote');
     function note(el, text) { el.textContent = text; el.hidden = false; }
     elExp.addEventListener('click', function () {
-      var c = makeCode();
-      elExpCode.value = c;
+      elExpCode.textContent = makeCode();
       elExpCode.hidden = false;
-      var sum = 'El código lleva ' + codeSummary(readCode(c)) + '.';
-      function shown() { elExpCode.focus(); elExpCode.select(); note(elExpNote, sum + ' Cópialo de aquí arriba.'); }
-      if (navigator.share) {          // en el móvil: directamente a WhatsApp, correo…
-        navigator.share({ text: c }).then(function () { note(elExpNote, sum + ' Enviado.'); }, shown);
-      } else if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(c).then(function () { note(elExpNote, sum + ' Copiado: ya puedes pegarlo donde quieras.'); }, shown);
-      } else shown();
+      note(elExpNote, 'Lleva ' + nStick(prizes.got) + ', ' + nStars(prizes.stars) + ' hacia la siguiente y los niveles. ' +
+        'Si sigue jugando aquí, el número cambia: apúntalo justo antes de pasarlo.');
     });
     var armed = null, label = elImp.textContent;
     function disarm() { clearTimeout(armed); armed = null; elImp.textContent = label; elImp.classList.remove('armed'); }
-    elImpCode.addEventListener('input', function () { disarm(); elImpNote.hidden = true; });
+    elImpCode.addEventListener('input', function () {
+      var t = elImpCode.value.replace(/\D/g, '').slice(0, 6);   // pone el guion solo
+      var f = t.length > 3 ? t.slice(0, 3) + '-' + t.slice(3) : t;
+      if (f !== elImpCode.value) elImpCode.value = f;
+      disarm(); elImpNote.hidden = true;
+    });
     elImp.addEventListener('click', function () {
-      var data = readCode(elImpCode.value);
-      if (!data) { disarm(); note(elImpNote, 'Ese código no vale. Comprueba que lo has pegado entero (empieza por APRENDE1-).'); return; }
+      var c = readCode(elImpCode.value);
+      if (!c) { disarm(); note(elImpNote, 'Ese número no vale. Comprueba las 6 cifras.'); return; }
       if (!armed) {
-        note(elImpNote, 'El código tiene ' + codeSummary(data) + '. Sustituirá a lo que hay en este aparato (' +
-          score + (score === 1 ? ' estrella' : ' estrellas') + ' y ' + prizes.got + (prizes.got === 1 ? ' pegatina' : ' pegatinas') + ').');
+        note(elImpNote, 'El número trae ' + nStick(c.got) + ' y ' + nStars(c.stars) + ' hacia la siguiente. ' +
+          'Sustituirá a lo que hay en este aparato (' + nStick(prizes.got) + ').');
         elImp.textContent = '¿Seguro? Toca otra vez';
         elImp.classList.add('armed');
-        armed = setTimeout(disarm, 6000);
+        armed = setTimeout(disarm, 8000);
         return;
       }
       disarm();
-      try {
-        SAVE_KEYS.forEach(function (k) {
-          if (k in data) localStorage.setItem(k, data[k]); else localStorage.removeItem(k);
-        });
-      } catch (e) { note(elImpNote, 'No se ha podido guardar en este aparato.'); return; }
+      var gold = [];
+      for (var k = 0; k < c.got; k++) if (isGold(k)) gold.push(k);
+      prizes = { got: c.got, stars: c.stars, gold: gold };
+      score = c.got * STARS_PER_STICKER + c.stars;
+      quizLevel = { groups: c.groups, hits: 0 };
+      dict = { lvl: c.dict, good: 0, bad: 0 };
+      eng = { lvl: c.eng, hits: 0 };
+      body = { lvl: c.body, hits: 0 };
+      savePrizes(); saveScore(); saveLevel(); saveDict(); saveEng(); saveBody();
       note(elImpNote, 'Hecho ✓ Cargando…');
       setTimeout(function () { location.reload(); }, 600);
     });
