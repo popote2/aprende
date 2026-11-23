@@ -17,12 +17,14 @@ self.DINERO = {
   ],
   maxDa: 5
 };
-self.DINERO_NUM = ['cero', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'];
+self.DINERO_NUM = ['cero', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez',
+  'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte'];
+self.CUENTAS_MAX = 20;   // hasta dónde llegan las historias
 self.dineroTextos = function () {   // nombre del audio -> frase (también para la voz de respaldo)
   var D = self.DINERO, N = self.DINERO_NUM, t = {};
   function eu(n) { return N[n] + (n === 1 ? ' euro' : ' euros'); }
   for (var n = 1; n <= 10; n++) t['dn-st-' + n] = 'Tienes ' + eu(n) + '.';
-  for (n = 0; n <= 10; n++) t['dn-ahora-' + n] = 'Ahora tienes ' + eu(n) + '.';
+  for (n = 0; n <= self.CUENTAS_MAX; n++) t['dn-ahora-' + n] = 'Ahora tienes ' + eu(n) + '.';
   D.personas.forEach(function (p) {
     for (var k = 1; k <= D.maxDa; k++) t['dn-da-' + p[0] + '-' + k] = 'Y si ' + p[1] + ' te da ' + eu(k) + '...';
   });
@@ -33,7 +35,7 @@ self.dineroTextos = function () {   // nombre del audio -> frase (también para 
   return t;
 };
 
-// «Bichos»: la misma idea, con bichos que llegan y se van.
+// «Bichos»: la misma idea, con bichos (mezclados) que llegan y se van.
 // [id, singular, plural, femenino, dibujo]
 // Palometa: la polilla de la despensa (alas cerradas, gris parduzco, antenas largas). Va dibujada.
 var PALOMETA = '<svg class=\'bug-svg\' viewBox=\'0 0 100 100\'><g stroke=\'#5a4a3a\' stroke-width=\'2.2\' stroke-linecap=\'round\' fill=\'none\'><path d=\'M70 47 Q84 30 96 26\'/><path d=\'M70 53 Q86 66 97 70\'/><path d=\'M56 60 L52 74 L46 80\'/><path d=\'M62 60 L64 75 L70 80\'/></g><path d=\'M8 50 Q12 34 30 32 L66 40 Q72 50 66 60 L30 68 Q12 66 8 50Z\' fill=\'#a8998a\' stroke=\'#6b5a48\' stroke-width=\'2.5\' stroke-linejoin=\'round\'/><path d=\'M12 50 L64 50\' stroke=\'#6b5a48\' stroke-width=\'1.8\'/><path d=\'M10 44 Q6 40 5 36 M10 56 Q6 60 5 64\' stroke=\'#c9bdb0\' stroke-width=\'2\' fill=\'none\' stroke-linecap=\'round\'/><g fill=\'#6b5a48\' opacity=\'.75\'><circle cx=\'24\' cy=\'42\' r=\'2.4\'/><circle cx=\'38\' cy=\'45\' r=\'2\'/><circle cx=\'30\' cy=\'57\' r=\'2.6\'/><circle cx=\'46\' cy=\'56\' r=\'1.8\'/><circle cx=\'52\' cy=\'43\' r=\'2.2\'/><circle cx=\'18\' cy=\'52\' r=\'1.6\'/></g><path d=\'M22 38 Q36 36 50 40\' stroke=\'#d8cdc0\' stroke-width=\'2.5\' fill=\'none\' stroke-linecap=\'round\' opacity=\'.8\'/><ellipse cx=\'72\' cy=\'50\' rx=\'9\' ry=\'9\' fill=\'#8c7c6b\' stroke=\'#5a4a3a\' stroke-width=\'2.2\'/><circle cx=\'76\' cy=\'45.5\' r=\'3.4\' fill=\'#222\'/><circle cx=\'76\' cy=\'54.5\' r=\'3.4\' fill=\'#222\'/><circle cx=\'77\' cy=\'44.5\' r=\'1.1\' fill=\'#fff\'/><circle cx=\'77\' cy=\'53.5\' r=\'1.1\' fill=\'#fff\'/></svg>';
@@ -41,7 +43,8 @@ self.BICHOS = [
   ['escarabajo', 'escarabajo', 'escarabajos', false, '🪲'], ['cucaracha', 'cucaracha', 'cucarachas', true, '🪳'],
   ['palometa', 'palometa', 'palometas', true, PALOMETA], ['mariquita', 'mariquita', 'mariquitas', true, '🐞'],
   ['hormiga', 'hormiga', 'hormigas', true, '🐜'], ['caracol', 'caracol', 'caracoles', false, '🐌'],
-  ['grillo', 'grillo', 'grillos', false, '🦗'], ['arana', 'araña', 'arañas', true, '🕷️']
+  ['grillo', 'grillo', 'grillos', false, '🦗'], ['arana', 'araña', 'arañas', true, '🕷️'],
+  ['mariposa', 'mariposa', 'mariposas', true, '🦋']
 ];
 self.bichosTextos = function () {
   var N = self.DINERO_NUM, t = {};
@@ -53,11 +56,12 @@ self.bichosTextos = function () {
       t[id + 'lle-' + n] = 'Y si ' + (n === 1 ? 'llega ' : 'llegan ') + cu(n) + ' más...';
       t[id + 'van-' + n] = 'Y si ' + (n === 1 ? 'se va ' : 'se van ') + cu(n) + '...';
     }
-    t[id + 'cuantos'] = (b[3] ? '¿Cuántas ' : '¿Cuántos ') + b[2] + ' hay?';
-    for (n = 0; n <= 10; n++) {
-      t[id + 'ahora-' + n] = n ? 'Ahora hay ' + cu(n) + '.' : 'Ahora no hay ' + (b[3] ? 'ninguna ' : 'ningún ') + b[1] + '.';
-    }
   });
+  // los bichos se mezclan: la pregunta y la respuesta son de "bichos"
+  t['bi-cuantos'] = '¿Cuántos bichos hay?';
+  for (var n = 0; n <= self.CUENTAS_MAX; n++) {
+    t['bi-ahora-' + n] = n ? 'Ahora hay ' + (n === 1 ? 'un bicho' : N[n] + ' bichos') + '.' : 'Ahora no hay ningún bicho.';
+  }
   t['bi-intro'] = 'Escucha la historia y cuenta los bichos.';
   return t;
 };

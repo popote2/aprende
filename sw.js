@@ -4,7 +4,7 @@
 // Cambia CACHE si modificas la lista de archivos.
 importScripts('palabras.js', 'premios.js', 'ingles.js', 'dinero.js');   // palabras para leer y pegatinas
 
-var CACHE = 'sumas-v71';
+var CACHE = 'sumas-v72';
 // Grabaciones opcionales: se guardan si existen; si faltan no pasa nada
 var OPTIONAL = ['muy-bien', 'uy', 'quedan', 'son', 'premio', 'premio-oro', 'album-completo', 'album-nuevo', 'cucaracha', 'colores',
   'w-rojo', 'w-azul', 'w-verde', 'w-amarillo', 'w-rosa', 'w-naranja', 'w-morado', 'w-marron', 'w-negro', 'w-blanco', 'w-gris'];

@@ -2632,11 +2632,14 @@
   var m = null, mTimers = [], mIntro = false, mLastWho = null, mKind = 'money', mLastBug = null;
   // nombres de los audios según el tipo de historia
   function mClip(what, n) {
-    if (mKind === 'bugs') return 'bi-' + (what === 'intro' ? 'intro' : m.bug[0] + '-' + what + (n !== undefined ? '-' + n : ''));
+    if (mKind === 'bugs') {   // "Hay 3 arañas" es de cada bicho; la pregunta y la respuesta, de "bichos"
+      if (what === 'st') return 'bi-' + m.bug[0] + '-st-' + n;
+      return 'bi-' + what + (n !== undefined ? '-' + n : '');
+    }
     return 'dn-' + what + (n !== undefined ? '-' + n : '');
   }
 
-  function mMax() { return Math.min(settings.maxNum || 10, 10); }
+  function mMax() { return window.CUENTAS_MAX || 20; }   // estas historias llegan hasta 20
   function stopMoney() {
     mTimers.forEach(clearTimeout); mTimers = [];
     m = null;
@@ -2652,10 +2655,13 @@
   }
   function newStory(again) {
     var max = mMax();
-    m = { total: 1 + randInt(Math.min(5, max - 1)), steps: 3 + randInt(2), step: 0, first: true, again: again };
-    if (mKind === 'bugs') {   // un bicho distinto en cada historia
+    m = { total: 1 + randInt(10), steps: 3 + randInt(2), step: 0, first: true, again: again };
+    if (mKind === 'bugs') {   // empieza con unos bichos; luego llegan otros (mezclados)
       do { m.bug = pick(BI); } while (BI.length > 1 && m.bug[0] === mLastBug);
       mLastBug = m.bug[0];
+      m.total = 1 + randInt(5);
+      m.list = [];
+      for (var k = 0; k < m.total; k++) m.list.push(m.bug);
       mShown = 0;
     }
     moneyStep();
@@ -2668,12 +2674,22 @@
     // a veces da, a veces gasta (sin repetir mucho lo mismo)
     var give = canGive && (!spend.length || (m.last === 'spend' ? Math.random() < 0.7 : m.last === 'give' ? Math.random() < 0.3 : Math.random() < 0.5));
     var it;
-    if (mKind === 'bugs') {   // llegan o se van unos cuantos
+    if (mKind === 'bugs') {   // llegan bichos (de cualquier clase) o se van algunos de los que hay
       var come = t < max && (t === 0 || (m.last === 'spend' ? Math.random() < 0.7 : m.last === 'give' ? Math.random() < 0.3 : Math.random() < 0.5));
-      var n = 1 + randInt(Math.min(5, come ? max - t : t));
-      it = come ? { clip: mClip('lle', n), answer: t + n, key: t + ' + ' + n, move: 'arrive' }
-                : { clip: mClip('van', n), answer: t - n, key: t + ' − ' + n, move: 'leave' };
-      it.pic = '<span class="m-bug ' + m.bug[0] + '">' + m.bug[4] + '</span>';
+      var sp, n;
+      if (come) {
+        do { sp = pick(BI); } while (BI.length > 2 && sp === m.lastSp);   // casi siempre, uno distinto al anterior
+        n = 1 + randInt(Math.min(5, max - t));
+      } else {
+        var here = BI.filter(function (b) { return m.list.indexOf(b) >= 0; });
+        sp = pick(here);
+        n = 1 + randInt(Math.min(5, m.list.filter(function (b) { return b === sp; }).length));
+      }
+      m.lastSp = sp;
+      it = come ? { clip: 'bi-' + sp[0] + '-lle-' + n, answer: t + n, key: t + ' + ' + n, move: 'arrive' }
+                : { clip: 'bi-' + sp[0] + '-van-' + n, answer: t - n, key: t + ' − ' + n, move: 'leave' };
+      it.sp = sp; it.n = n;
+      it.pic = '<span class="m-bug">' + sp[4] + '</span>';
       m.last = come ? 'give' : 'spend';
     } else if (give) {
       var who;
@@ -2718,12 +2734,13 @@
   var mShown = 0;
   function showPurse(n) {   // solo "saltan" las monedas nuevas
     var h = '';
-    var bug = mKind === 'bugs' && m && m.bug;
+    var bugs = mKind === 'bugs' && m && m.list;
     for (var k = 0; k < n; k++) {
-      h += bug ? '<span class="m-tbug ' + bug[0] + (k >= mShown ? ' new' : '') + '">' + bug[4] + '</span>'
-               : '<span class="m-coin' + (k >= mShown ? ' new' : '') + '">1€</span>';
+      h += bugs ? '<span class="m-tbug' + (k >= mShown ? ' new' : '') + '">' + (bugs[k] ? bugs[k][4] : '') + '</span>'
+                : '<span class="m-coin' + (k >= mShown ? ' new' : '') + '">1€</span>';
     }
-    elMPurse.innerHTML = n ? h : '<span class="m-q">' + (bug ? '0' : '0 €') + '</span>';
+    elMPurse.innerHTML = n ? h : '<span class="m-q">' + (bugs ? '0' : '0 €') + '</span>';
+    elMPurse.classList.toggle('many', n > 10);   // con muchos, más pequeños
     mShown = n;
   }
   elMEar.addEventListener('click', function () {
@@ -2750,6 +2767,10 @@
       record('math', it.key + (mKind === 'bugs' ? ' bichos' : ' €'), it.misses === 0);
       var prize = addPoint();
       story.total = it.answer;
+      if (story.list && it.sp) {   // los bichos de arriba: llegan al final, se van los últimos de esa clase
+        if (it.move === 'arrive') for (var q = 0; q < it.n; q++) story.list.push(it.sp);
+        else for (var r = 0; r < it.n; r++) story.list.splice(story.list.lastIndexOf(it.sp), 1);
+      }
       story.first = false;
       story.step++;
       showPurse(story.total);
