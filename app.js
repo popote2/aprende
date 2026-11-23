@@ -2655,7 +2655,7 @@
   }
   function newStory(again) {
     var max = mMax();
-    m = { total: 1 + randInt(10), steps: 3 + randInt(2), step: 0, first: true, again: again };
+    m = { total: 1 + randInt(10), steps: 5 + randInt(2), step: 0, first: true, again: again };
     if (mKind === 'bugs') {   // empieza con unos bichos; luego llegan otros (mezclados)
       do { m.bug = pick(BI); } while (BI.length > 1 && m.bug[0] === mLastBug);
       mLastBug = m.bug[0];
