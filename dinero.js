@@ -47,7 +47,8 @@ self.BICHOS = [
   ['hormiga', 'hormiga', 'hormigas', true, '🐜'], ['caracol', 'caracol', 'caracoles', false, '🐌'],
   ['grillo', 'grillo', 'grillos', false, '🦗'], ['arana', 'araña', 'arañas', true, '🕷️'],
   ['mariposa', 'mariposa', 'mariposas', true, '🦋'],
-  ['zapatero', 'zapatero', 'zapateros', false, ZAPATERO]
+  ['zapatero', 'zapatero', 'zapateros', false, ZAPATERO],
+  ['mosca', 'mosca', 'moscas', true, '🪰'], ['abeja', 'abeja', 'abejas', true, '🐝']
 ];
 self.bichosTextos = function () {
   var N = self.DINERO_NUM, t = {};
