@@ -2636,6 +2636,7 @@
   function startMoney() {
     elMoney.hidden = false;
     mIntro = true;
+    mShown = 0;
     newStory(false);
   }
   function newStory(again) {
@@ -2668,7 +2669,7 @@
     m.it = it;
     elMPic.innerHTML = it.pic;   // emoji o dibujo (la bola del vaivén)
     bounce(elMPic, 'lit');
-    elMPurse.innerHTML = '<span class="m-q">?</span>';
+    showPurse(t);   // arriba, las monedas que tiene ahora
     // tres números seguidos alrededor de la respuesta
     var lo = Math.max(0, Math.min(it.answer - randInt(3), max - 2));
     var vals = [lo, lo + 1, lo + 2];
@@ -2690,10 +2691,12 @@
     list.push({ clip: m.it.clip, pitch: 1, rate: 0.95 }, { clip: 'dn-cuantos', pitch: 1, rate: 1 });
     play(list);
   }
-  function showPurse(n) {
+  var mShown = 0;
+  function showPurse(n) {   // solo "saltan" las monedas nuevas
     var h = '';
-    for (var k = 0; k < n; k++) h += '<span class="m-coin">1€</span>';
-    elMPurse.innerHTML = n ? h : '<span class="m-q">0</span>';
+    for (var k = 0; k < n; k++) h += '<span class="m-coin' + (k >= mShown ? ' new' : '') + '">1€</span>';
+    elMPurse.innerHTML = n ? h : '<span class="m-q">0 €</span>';
+    mShown = n;
   }
   elMEar.addEventListener('click', function () {
     unlockSound();
