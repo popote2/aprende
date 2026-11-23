@@ -32,3 +32,30 @@ self.dineroTextos = function () {   // nombre del audio -> frase (también para 
   t['dn-otra'] = '¡Otra historia!';
   return t;
 };
+
+// «Bichos»: la misma idea, con bichos que llegan y se van.
+// [id, singular, plural, femenino, dibujo]
+self.BICHOS = [
+  ['escarabajo', 'escarabajo', 'escarabajos', false, '🪲'], ['cucaracha', 'cucaracha', 'cucarachas', true, '🪳'],
+  ['palometa', 'palometa', 'palometas', true, '🦋'], ['mariquita', 'mariquita', 'mariquitas', true, '🐞'],
+  ['hormiga', 'hormiga', 'hormigas', true, '🐜'], ['caracol', 'caracol', 'caracoles', false, '🐌'],
+  ['grillo', 'grillo', 'grillos', false, '🦗'], ['arana', 'araña', 'arañas', true, '🕷️']
+];
+self.bichosTextos = function () {
+  var N = self.DINERO_NUM, t = {};
+  self.BICHOS.forEach(function (b) {
+    var id = 'bi-' + b[0] + '-';
+    function cu(n) { return (n === 1 ? (b[3] ? 'una' : 'un') : N[n]) + ' ' + (n === 1 ? b[1] : b[2]); }
+    for (var n = 1; n <= 5; n++) {
+      t[id + 'st-' + n] = (n === 1 ? 'Hay ' : 'Hay ') + cu(n) + ' en el jardín.';
+      t[id + 'lle-' + n] = 'Y si ' + (n === 1 ? 'llega ' : 'llegan ') + cu(n) + ' más...';
+      t[id + 'van-' + n] = 'Y si ' + (n === 1 ? 'se va ' : 'se van ') + cu(n) + '...';
+    }
+    t[id + 'cuantos'] = (b[3] ? '¿Cuántas ' : '¿Cuántos ') + b[2] + ' hay?';
+    for (n = 0; n <= 10; n++) {
+      t[id + 'ahora-' + n] = n ? 'Ahora hay ' + cu(n) + '.' : 'Ahora no hay ' + (b[3] ? 'ninguna ' : 'ningún ') + b[1] + '.';
+    }
+  });
+  t['bi-intro'] = 'Escucha la historia y cuenta los bichos.';
+  return t;
+};

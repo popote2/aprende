@@ -1349,3 +1349,18 @@ html, body {
   .m-pic { font-size: min(18vh, 30vw); }
 }
 .m-svg { width: 1em; height: 1em; display: block; filter: drop-shadow(0 6px 4px rgba(0, 0, 0, .2)); }
+
+/* ---------- «Bichos» (mismo juego que «Mis euros») ---------- */
+.mode-bugs { background: #6a994e; box-shadow: 0 8px 0 #45683a; }
+.mode-bugs .art-chip { color: #6a994e; }
+.money.bugs .m-purse { background: #8fc96b; box-shadow: inset 0 0 0 4px #5e9442, 0 4px 0 #45683a; }
+.money.bugs .m-q { color: #2f5220; }
+.m-tbug { font-size: min(5.5vh, 6.5vw); line-height: 1; }
+.m-tbug.new { animation: pop .35s cubic-bezier(.2, 1.6, .4, 1) both; }
+.m-bug { display: inline-block; }
+.palometa { filter: grayscale(1) sepia(.7) brightness(.85); }   /* mariposa en marrón: palometa */
+.m-pic.arrive .m-bug { animation: bugIn .9s ease-out both; }
+.m-pic.leave .m-bug { animation: bugOut 2s ease-in-out both; }
+@keyframes bugIn { from { transform: translateX(-60vw) rotate(-20deg); } 70% { transform: translateX(4vw) rotate(8deg); } to { transform: none; } }
+@keyframes bugOut { 0%, 25% { transform: none; opacity: 1; } 60% { transform: translateX(60vw) rotate(20deg); opacity: 0; }
+  61% { transform: none; opacity: 0; } to { transform: none; opacity: 1; } }

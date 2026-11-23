@@ -4,7 +4,7 @@
 // Cambia CACHE si modificas la lista de archivos.
 importScripts('palabras.js', 'premios.js', 'ingles.js', 'dinero.js');   // palabras para leer y pegatinas
 
-var CACHE = 'sumas-v69';
+var CACHE = 'sumas-v70';
 // Grabaciones opcionales: se guardan si existen; si faltan no pasa nada
 var OPTIONAL = ['muy-bien', 'uy', 'quedan', 'son', 'premio', 'premio-oro', 'album-completo', 'album-nuevo', 'cucaracha', 'colores',
   'w-rojo', 'w-azul', 'w-verde', 'w-amarillo', 'w-rosa', 'w-naranja', 'w-morado', 'w-marron', 'w-negro', 'w-blanco', 'w-gris'];
@@ -25,7 +25,7 @@ OPTIONAL.push('ingles');
 });
 OPTIONAL.push('cuerpo');
 (self.CUERPO || []).forEach(function (p) { OPTIONAL.push('bt-' + p[0], 'bn-' + p[0], 'be-' + p[0]); });
-OPTIONAL = OPTIONAL.concat(Object.keys(self.dineroTextos ? self.dineroTextos() : {}));
+OPTIONAL = OPTIONAL.concat(Object.keys(self.dineroTextos ? self.dineroTextos() : {}), Object.keys(self.bichosTextos ? self.bichosTextos() : {}));
 OPTIONAL.push('como-en');
 OPTIONAL.push('y');
 self.SILABAS.forEach(function (x) {

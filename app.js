@@ -211,6 +211,8 @@
   if (window.dineroTextos) {
     var dnT = window.dineroTextos();
     Object.keys(dnT).forEach(function (k) { CLIPS[k] = dnT[k]; });
+    var biT = window.bichosTextos ? window.bichosTextos() : {};
+    Object.keys(biT).forEach(function (k) { CLIPS[k] = biT[k]; });
   }
   CLIPS['cuerpo'] = 'Escucha en inglés y toca esa parte del cuerpo.';
   (window.CUERPO || []).forEach(function (p) {
@@ -683,8 +685,8 @@
       elStart.style.display = 'none';   // por si el navegador tuviera un CSS antiguo
       unlockSound();
       elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = elBodyG.hidden = elMoney.hidden = true;
-      if (mode === 'money') {
-        startMoney();
+      if (mode === 'money' || mode === 'bugs') {
+        startMoney(mode);
       } else if (mode === 'colors') {
         startColors();
       } else if (mode === 'body') {
@@ -2204,6 +2206,7 @@
   // [modo, nombre, explicación, grupo]
   var MODE_NAMES = [['sum', '➕ Sumas', '', 'Números'], ['sub', '➖ Restas', '', 'Números'],
                     ['money', '💶 Mis euros', 'cuentas habladas: papá te da, te gastas…', 'Números'],
+                    ['bugs', '🐞 Bichos', 'cuentas habladas: llegan y se van bichos', 'Números'],
                     ['syl', 'MA Sílabas', 'ver y oír cada sílaba', 'Letras'],
                     ['sylq', '👂 Escucha y busca', 'oye una sílaba y la busca', 'Letras'],
                     ['read', 'CA SA Leer palabras', 'palabras por sílabas', 'Letras'],
@@ -2625,7 +2628,13 @@
   var elMPurse = document.getElementById('mPurse');
   var mButtons = Array.prototype.slice.call(document.querySelectorAll('#mOpts .opt'));
   var DN = window.DINERO || { personas: [], cosas: [], maxDa: 5 };
-  var m = null, mTimers = [], mIntro = false, mLastWho = null;
+  var BI = window.BICHOS || [];
+  var m = null, mTimers = [], mIntro = false, mLastWho = null, mKind = 'money', mLastBug = null;
+  // nombres de los audios según el tipo de historia
+  function mClip(what, n) {
+    if (mKind === 'bugs') return 'bi-' + (what === 'intro' ? 'intro' : m.bug[0] + '-' + what + (n !== undefined ? '-' + n : ''));
+    return 'dn-' + what + (n !== undefined ? '-' + n : '');
+  }
 
   function mMax() { return Math.min(settings.maxNum || 10, 10); }
   function stopMoney() {
@@ -2633,7 +2642,9 @@
     m = null;
     elMoney.hidden = true;
   }
-  function startMoney() {
+  function startMoney(kind) {
+    mKind = kind === 'bugs' ? 'bugs' : 'money';
+    elMoney.classList.toggle('bugs', mKind === 'bugs');
     elMoney.hidden = false;
     mIntro = true;
     mShown = 0;
@@ -2642,6 +2653,11 @@
   function newStory(again) {
     var max = mMax();
     m = { total: 1 + randInt(Math.min(5, max - 1)), steps: 3 + randInt(2), step: 0, first: true, again: again };
+    if (mKind === 'bugs') {   // un bicho distinto en cada historia
+      do { m.bug = pick(BI); } while (BI.length > 1 && m.bug[0] === mLastBug);
+      mLastBug = m.bug[0];
+      mShown = 0;
+    }
     moneyStep();
   }
   function moneyStep() {
@@ -2652,7 +2668,14 @@
     // a veces da, a veces gasta (sin repetir mucho lo mismo)
     var give = canGive && (!spend.length || (m.last === 'spend' ? Math.random() < 0.7 : m.last === 'give' ? Math.random() < 0.3 : Math.random() < 0.5));
     var it;
-    if (give) {
+    if (mKind === 'bugs') {   // llegan o se van unos cuantos
+      var come = t < max && (t === 0 || (m.last === 'spend' ? Math.random() < 0.7 : m.last === 'give' ? Math.random() < 0.3 : Math.random() < 0.5));
+      var n = 1 + randInt(Math.min(5, come ? max - t : t));
+      it = come ? { clip: mClip('lle', n), answer: t + n, key: t + ' + ' + n, move: 'arrive' }
+                : { clip: mClip('van', n), answer: t - n, key: t + ' − ' + n, move: 'leave' };
+      it.pic = '<span class="m-bug ' + m.bug[0] + '">' + m.bug[4] + '</span>';
+      m.last = come ? 'give' : 'spend';
+    } else if (give) {
       var who;
       do { who = pick(DN.personas); } while (DN.personas.length > 1 && who[0] === mLastWho);
       mLastWho = who[0];
@@ -2668,7 +2691,8 @@
     it.busy = false;
     m.it = it;
     elMPic.innerHTML = it.pic;   // emoji o dibujo (la bola del vaivén)
-    bounce(elMPic, 'lit');
+    elMPic.className = 'm-pic';
+    bounce(elMPic, it.move || 'lit');
     showPurse(t);   // arriba, las monedas que tiene ahora
     // tres números seguidos alrededor de la respuesta
     var lo = Math.max(0, Math.min(it.answer - randInt(3), max - 2));
@@ -2685,17 +2709,21 @@
     if (!m || !m.it) return;
     bounce(elMEar, 'lit');
     var list = [];
-    if (full && mIntro) { list.push({ clip: 'dn-intro', pitch: 1, rate: 1 }); mIntro = false; }
+    if (full && mIntro) { list.push({ clip: mClip('intro'), pitch: 1, rate: 1 }); mIntro = false; }
     if (full && m.again && m.first) list.push({ clip: 'dn-otra', pitch: 1.1, rate: 1 });
-    if (m.first) list.push({ clip: 'dn-st-' + m.total, pitch: 1, rate: 0.95 });
-    list.push({ clip: m.it.clip, pitch: 1, rate: 0.95 }, { clip: 'dn-cuantos', pitch: 1, rate: 1 });
+    if (m.first) list.push({ clip: mClip('st', m.total), pitch: 1, rate: 0.95 });
+    list.push({ clip: m.it.clip, pitch: 1, rate: 0.95 }, { clip: mClip('cuantos'), pitch: 1, rate: 1 });
     play(list);
   }
   var mShown = 0;
   function showPurse(n) {   // solo "saltan" las monedas nuevas
     var h = '';
-    for (var k = 0; k < n; k++) h += '<span class="m-coin' + (k >= mShown ? ' new' : '') + '">1€</span>';
-    elMPurse.innerHTML = n ? h : '<span class="m-q">0 €</span>';
+    var bug = mKind === 'bugs' && m && m.bug;
+    for (var k = 0; k < n; k++) {
+      h += bug ? '<span class="m-tbug ' + bug[0] + (k >= mShown ? ' new' : '') + '">' + bug[4] + '</span>'
+               : '<span class="m-coin' + (k >= mShown ? ' new' : '') + '">1€</span>';
+    }
+    elMPurse.innerHTML = n ? h : '<span class="m-q">' + (bug ? '0' : '0 €') + '</span>';
     mShown = n;
   }
   elMEar.addEventListener('click', function () {
@@ -2712,14 +2740,14 @@
         b.classList.add('wrong');
         b.disabled = true;
         if (it.misses >= 2) mButtons.forEach(function (x) { if (x.mValue === it.answer) x.classList.add('hint'); });
-        play([{ clip: 'uy', pitch: 1.1, rate: 1 }, { clip: it.clip, pitch: 1, rate: 0.95 }, { clip: 'dn-cuantos', pitch: 1, rate: 1 }]);
+        play([{ clip: 'uy', pitch: 1.1, rate: 1 }, { clip: it.clip, pitch: 1, rate: 0.95 }, { clip: mClip('cuantos'), pitch: 1, rate: 1 }]);
         return;
       }
       it.busy = true;
       b.classList.remove('hint');
       b.classList.add('correct');
       mButtons.forEach(function (x) { if (x !== b) x.classList.add('dim'); });
-      record('math', it.key + ' €', it.misses === 0);
+      record('math', it.key + (mKind === 'bugs' ? ' bichos' : ' €'), it.misses === 0);
       var prize = addPoint();
       story.total = it.answer;
       story.first = false;
@@ -2736,7 +2764,7 @@
         if (prize) showReward(prize, function () { if (!elMoney.hidden) go(); });
         else go();
       }
-      play([{ clip: 'muy-bien', pitch: 1.1, rate: 1 }, { clip: 'dn-ahora-' + story.total, pitch: 1, rate: 0.95 }],
+      play([{ clip: 'muy-bien', pitch: 1.1, rate: 1 }, { clip: mClip('ahora', story.total), pitch: 1, rate: 0.95 }],
         function () { mTimers.push(setTimeout(next, 900)); });
       mTimers.push(setTimeout(next, 7000));
     });
