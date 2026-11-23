@@ -7,7 +7,7 @@ var VAIVEN = '<svg class=\'m-svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=
 self.DINERO = {
   personas: [
     ['papa', 'papá', '👨'], ['mama', 'mamá', '👩'], ['abuelo', 'el abuelito', '👴'],
-    ['abuela', 'la abuelita', '👵'], ['tio', 'el tío', '🧔'], ['tia', 'la tía', '👩‍🦰']
+    ['abuela', 'la abuelita', '👵'], ['tio', 'el tito', '🧔'], ['tia', 'la tita', '👩‍🦰']
   ],
   cosas: [
     ['vaiven', 1, 'una bola del vaivén', VAIVEN], ['chupa', 1, 'un chupachups', '🍭'], ['globo', 1, 'un globo', '🎈'],
