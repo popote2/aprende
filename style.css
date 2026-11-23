@@ -1358,7 +1358,8 @@ html, body {
 .m-tbug { font-size: min(5.5vh, 6.5vw); line-height: 1; }
 .m-tbug.new { animation: pop .35s cubic-bezier(.2, 1.6, .4, 1) both; }
 .m-bug { display: inline-block; }
-.palometa { filter: grayscale(1) sepia(.7) brightness(.85); }   /* mariposa en marrón: palometa */
+.bug-svg { width: 1.15em; height: 1.15em; display: block; }
+.m-tbug .bug-svg { width: 1.2em; height: 1.2em; }
 .m-pic.arrive .m-bug { animation: bugIn .9s ease-out both; }
 .m-pic.leave .m-bug { animation: bugOut 2s ease-in-out both; }
 @keyframes bugIn { from { transform: translateX(-60vw) rotate(-20deg); } 70% { transform: translateX(4vw) rotate(8deg); } to { transform: none; } }
