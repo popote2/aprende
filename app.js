@@ -149,7 +149,7 @@
   function isGold(k) {
     var x = Math.imul(k + 7, 0x9e3779b1) >>> 0;
     x ^= x >>> 15; x = Math.imul(x, 0x45d9f3b) >>> 0; x ^= x >>> 16;
-    return x % 100 < GOLD_CHANCE * 100;
+    return (x >>> 0) % 100 < GOLD_CHANCE * 100;
   }
   function addPoint() {
     score++;
