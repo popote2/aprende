@@ -1347,3 +1347,4 @@ html, body {
   .m-opts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .m-pic { font-size: min(18vh, 30vw); }
 }
+.m-svg { width: 1em; height: 1em; display: block; filter: drop-shadow(0 6px 4px rgba(0, 0, 0, .2)); }

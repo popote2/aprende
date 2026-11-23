@@ -2666,7 +2666,7 @@
     it.misses = 0;
     it.busy = false;
     m.it = it;
-    elMPic.textContent = it.pic;
+    elMPic.innerHTML = it.pic;   // emoji o dibujo (la bola del vaivén)
     bounce(elMPic, 'lit');
     elMPurse.innerHTML = '<span class="m-q">?</span>';
     // tres números seguidos alrededor de la respuesta

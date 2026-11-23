@@ -2,13 +2,15 @@
 // Quién da dinero: [id, nombre, dibujo]  ·  En qué se gasta: [id, precio, texto, dibujo]
 // Audios (audio/dn-*.mp3): dn-st-N "Tienes N euros.", dn-da-<id>-N "Y si papá te da N euros...",
 // dn-gasta-<id> "Y si te gastas N euros en ...", dn-cuantos, dn-ahora-N, dn-intro, dn-otra.
+// Bola del vaivén: la cápsula de plástico con un juguete dentro (no hay emoji, va dibujada)
+var VAIVEN = '<svg class=\'m-svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'44\' fill=\'#d9f1ff\'/><path d=\'M6 50a44 44 0 0 0 88 0z\' fill=\'#e5383b\'/><g transform=\'translate(50 36)\'><path d=\'M0-16l4.7 9.6 10.5 1.5-7.6 7.4 1.8 10.5L0 8l-9.4 5 1.8-10.5-7.6-7.4 10.5-1.5z\' fill=\'#ffd60a\' stroke=\'#c99700\' stroke-width=\'1.5\' stroke-linejoin=\'round\'/><circle cx=\'-3.5\' cy=\'-2\' r=\'1.6\' fill=\'#333\'/><circle cx=\'3.5\' cy=\'-2\' r=\'1.6\' fill=\'#333\'/></g><path d=\'M6 50h88\' stroke=\'#a8262a\' stroke-width=\'5\'/><circle cx=\'50\' cy=\'50\' r=\'44\' fill=\'none\' stroke=\'#5b6b80\' stroke-width=\'3\'/><path d=\'M24 24a34 34 0 0 1 18-10\' stroke=\'#fff\' stroke-width=\'5\' stroke-linecap=\'round\' fill=\'none\' opacity=\'.9\'/><path d=\'M78 66a32 32 0 0 1-10 12\' stroke=\'#fff\' stroke-width=\'4\' stroke-linecap=\'round\' fill=\'none\' opacity=\'.45\'/></svg>';
 self.DINERO = {
   personas: [
     ['papa', 'papá', '👨'], ['mama', 'mamá', '👩'], ['abuelo', 'el abuelito', '👴'],
     ['abuela', 'la abuelita', '👵'], ['tio', 'el tío', '🧔'], ['tia', 'la tía', '👩‍🦰']
   ],
   cosas: [
-    ['vaiven', 1, 'una bola del vaivén', '🔮'], ['chupa', 1, 'un chupachups', '🍭'], ['globo', 1, 'un globo', '🎈'],
+    ['vaiven', 1, 'una bola del vaivén', VAIVEN], ['chupa', 1, 'un chupachups', '🍭'], ['globo', 1, 'un globo', '🎈'],
     ['chuches', 2, 'chuches', '🍬'], ['helado', 2, 'un helado', '🍦'], ['pegatinas', 2, 'pegatinas', '🌟'],
     ['gusanitos', 3, 'gusanitos', '🍿'], ['pelota', 3, 'una pelota', '⚽'], ['cuento', 4, 'un cuento', '📕'],
     ['coche', 4, 'un cochecito', '🚗'], ['peluche', 5, 'un peluche', '🧸']
