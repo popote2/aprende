@@ -702,7 +702,7 @@
         startBody();
       } else if (mode === 'sylq' || mode === 'wordq' || mode === 'build' || mode === 'english') {
         startQuiz(mode);
-      } else if (mode === 'trace' || mode === 'tword' || mode === 'tmiss') {
+      } else if (mode === 'trace' || mode === 'tlow' || mode === 'tword' || mode === 'tmiss') {
         startTrace(mode);
       } else if (mode === 'read') {
         elReader.hidden = false;
@@ -1393,6 +1393,20 @@
     return out;
   }
   Object.keys(LETTER_STROKES).forEach(function (l) { LETTER_STROKES[l] = LETTER_STROKES[l].map(densify); });
+  // Vocales minúsculas (pauta: arriba de la a en 40, renglón en 90). Un trazo de un solo punto es el punto de la i.
+  var LOWER_STROKES = {
+    a: [arc(48, 65, 21, 25, -25, -385), [[69, 40], [69, 90]]],
+    e: [path([27, 66], [73, 66], arc(50, 66, 23, 24, 0, -305))],
+    i: [[[50, 42], [50, 90]], [[50, 22]]],
+    o: [arc(50, 65, 23, 25, -90, -450)],
+    u: [path([28, 40], arc(48, 67, 20, 23, 180, 0), [68, 40]), [[68, 40], [68, 90]]]
+  };
+  Object.keys(LOWER_STROKES).forEach(function (l) { LOWER_STROKES[l] = LOWER_STROKES[l].map(densify); });
+  var LOWER_ORDER = ['a', 'e', 'i', 'o', 'u'];
+  var LOW_KEY = 'sumas.trazo.min';
+  var lowIndex = 0;
+  try { lowIndex = parseInt(localStorage.getItem(LOW_KEY), 10) || 0; } catch (e) {}
+  function guided() { return tmode === 'trace' || tmode === 'tlow'; }
   // Otras formas de escribir la misma letra que también valen al escribir sin guía
   var LETTER_VARIANTS = {
     J: [[path([66, 10], arc(44, 64, 22, 26, 0, 170))]],                    // J sin raya
@@ -1421,7 +1435,7 @@
   var demo = null;                    // { t0 } animación del dedo-guía
   var tracking = false;
   var lastTouch = 0;
-  var tmode = 'trace';                // trace (letras) | tword (escribe palabras) | tmiss (la letra que falta)
+  var tmode = 'trace';                // trace (letras) | tlow (vocales minúsculas) | tword (escribe palabras) | tmiss (la letra que falta)
   var wItem = null;                   // palabra de tword / tmiss: { text, letters, emoji, clip, pos, fails }
   var elTraceTarget = document.getElementById('traceTarget');
   var elTraceClear = document.getElementById('traceClear');
@@ -1509,6 +1523,8 @@
   var elTraceWords = document.getElementById('traceWords');
 
   function showTraceWords(letter) {
+    var low = letter !== letter.toUpperCase();
+    letter = letter.toUpperCase();
     var list = shuffle(TRACE_WORDS[letter].slice()), pickd = [];
     list.forEach(function (w) {
       if (pickd.length < 2 && !pickd.some(function (o) { return o.emoji === w.emoji; })) pickd.push(w);
@@ -1525,12 +1541,13 @@
       var word = document.createElement('span');
       word.className = 'ex-word';
       var t = noTildes(w.text), at = t.indexOf(letter);   // la letra, resaltada
-      word.appendChild(document.createTextNode(t.slice(0, at)));
+      var cs = function (x) { return low ? x.toLowerCase() : x; };
+      word.appendChild(document.createTextNode(cs(t.slice(0, at))));
       var hl = document.createElement('span');
       hl.className = 'hl';
-      hl.textContent = letter;
+      hl.textContent = cs(letter);
       word.appendChild(hl);
-      word.appendChild(document.createTextNode(t.slice(at + 1)));
+      word.appendChild(document.createTextNode(cs(t.slice(at + 1))));
       btn.appendChild(em);
       btn.appendChild(word);
       btn.addEventListener('click', function () {
@@ -1547,7 +1564,7 @@
   // Prepara el lienzo para una letra. free: sin guía (se escribe a mano y se corrige al final)
   function newLetter(letter, free) {
     if (tr) clearTimeout(tr.judgeTimer);
-    tr = { letter: letter, strokes: LETTER_STROKES[letter], s: 0, inks: [], ink: null, bad: null, fails: 0,
+    tr = { letter: letter, strokes: LOWER_STROKES[letter] || LETTER_STROKES[letter], s: 0, inks: [], ink: null, bad: null, fails: 0,
            state: 'playing', free: !!free, hint: false, judgeTimer: null };
     tracking = false;
     demo = null;
@@ -1559,15 +1576,22 @@
   }
 
   function showTrace(d) {
-    if (tmode !== 'trace') { nextWriteRound(); return; }
-    var list = traceLetters();
+    if (!guided()) { nextWriteRound(); return; }
     traceTimers.forEach(clearTimeout); traceTimers = [];
-    traceIndex = ((traceIndex + (d || 0)) % list.length + list.length) % list.length;
-    try { localStorage.setItem(TRACE_KEY, String(traceIndex)); } catch (e) {}
-    var letter = list[traceIndex];
+    var letter;
+    if (tmode === 'tlow') {
+      lowIndex = ((lowIndex + (d || 0)) % LOWER_ORDER.length + LOWER_ORDER.length) % LOWER_ORDER.length;
+      try { localStorage.setItem(LOW_KEY, String(lowIndex)); } catch (e) {}
+      letter = LOWER_ORDER[lowIndex];
+    } else {
+      var list = traceLetters();
+      traceIndex = ((traceIndex + (d || 0)) % list.length + list.length) % list.length;
+      try { localStorage.setItem(TRACE_KEY, String(traceIndex)); } catch (e) {}
+      letter = list[traceIndex];
+    }
     newLetter(letter, false);
     showTraceWords(letter);
-    play([{ clip: letterClip(letter), pitch: 1, rate: 0.9 }]);
+    play([{ clip: letterClip(letter.toUpperCase()), pitch: 1, rate: 0.9 }]);
     startDemo(400);
   }
 
@@ -1741,6 +1765,7 @@
     }
     var ok1 = tr.fails === 0;
     if (tmode === 'trace') record('trace', tr.letter, ok1);
+    else if (tmode === 'tlow') record('trace', tr.letter, ok1);
     else if (tmode === 'tword') {
       record('write', wItem.text, wItem.fails === 0);
       if (!wItem.hinted) { dict.good++; dict.bad = 0; } else { dict.bad++; dict.good = 0; }
@@ -1749,7 +1774,7 @@
       saveDict();
       wItem.pos = wItem.text.length;
     } else record('miss', wItem.text, wItem.fails === 0);
-    if (tmode !== 'trace') {
+    if (!guided()) {
       renderTarget();
       var slots = elTraceTarget.querySelectorAll('.tslot');
       if (tmode === 'tmiss') {
@@ -1763,7 +1788,7 @@
     elTraceMsg.className = 'msg';
     elTraceMsg.textContent = '¡Muy bien Inés!';
     elTraceMsg.hidden = false;
-    var prize = tmode === 'trace' ? null : addPoint();   // trazar con guía es muy fácil: no da estrellas
+    var prize = guided() ? null : addPoint();   // trazar con guía es muy fácil: no da estrellas
     var done = false, item = tr;
     function next() {
       if (done || tr !== item) return;
@@ -1772,9 +1797,9 @@
       else showTrace(1);
     }
     var list = [{ clip: 'muy-bien', pitch: 1.1, rate: 1 }];
-    if (tmode === 'trace') {
+    if (guided()) {
       // "¡Muy bien Inés! La eme, como en... mano, y moto"
-      list.push({ clip: letterClip(item.letter), pitch: 1, rate: 0.9 });
+      list.push({ clip: letterClip(item.letter.toUpperCase()), pitch: 1, rate: 0.9 });
       var chips = Array.prototype.slice.call(elTraceWords.children);
       if (chips.length) list.push({ clip: 'como-en', pitch: 1, rate: 0.95 });
       chips.forEach(function (btn, k) {
@@ -1797,11 +1822,11 @@
     tmode = m || 'trace';
     wItem = null;
     elTrace.hidden = false;
-    elTrace.classList.toggle('writing', tmode !== 'trace');
-    elTraceWords.hidden = tmode !== 'trace';
-    elTraceTarget.hidden = tmode === 'trace';
-    elPrevTrace.hidden = tmode !== 'trace';
-    elScore4.parentNode.hidden = tmode === 'trace';   // trazar no da estrellas: sin contador
+    elTrace.classList.toggle('writing', !guided());
+    elTraceWords.hidden = !guided();
+    elTraceTarget.hidden = guided();
+    elPrevTrace.hidden = !guided();
+    elScore4.parentNode.hidden = guided();   // trazar no da estrellas: sin contador
     var list = traceLetters();
     if (traceIndex >= list.length) traceIndex = 0;
     elTraceWords.innerHTML = '';
@@ -1853,6 +1878,14 @@
     tctx.lineCap = 'round';
     tctx.lineJoin = 'round';
     var S = tr.strokes;
+    if (tmode === 'tlow') {   // pauta de cuaderno: renglón abajo y línea de puntos a la altura de la a
+      strokeLine([[-4, 90], [104, 90]], 1, 0.8, '#d9c58f');
+      if (tctx.setLineDash) {
+        tctx.setLineDash([2 * traceBox.k, 3 * traceBox.k]);
+        strokeLine([[-4, 40], [104, 40]], 1, 0.6, '#e6d6a8');
+        tctx.setLineDash([]);
+      }
+    }
     if (tr.free) {
       // pauta, como en el cuaderno: línea de arriba y de abajo
       [10, 90].forEach(function (y) { strokeLine([[-4, y], [104, y]], 1, 0.8, '#d9c58f'); });
@@ -1863,14 +1896,20 @@
       }
     }
     // guía: la letra en gris claro con una línea de puntos por el centro (sin guía si se escribe a mano)
-    if (!tr.free || tr.hint) S.forEach(function (pts) { strokeLine(pts, pts.length - 1, 17, tr.free ? 'rgba(236, 220, 176, .8)' : '#ecdcb0'); });
+    if (!tr.free || tr.hint) S.forEach(function (pts) {
+      if (pts.length === 1) dot(pts[0], 8.5, '#ecdcb0');   // el punto de la i
+      else strokeLine(pts, pts.length - 1, 17, tr.free ? 'rgba(236, 220, 176, .8)' : '#ecdcb0');
+    });
     if ((!tr.free || tr.hint) && tctx.setLineDash) {
       tctx.setLineDash([2 * traceBox.k, 3 * traceBox.k]);
       S.forEach(function (pts) { strokeLine(pts, pts.length - 1, 1.2, '#c9a24a'); });
       tctx.setLineDash([]);
     }
     // lo que ha dibujado bien, con su color
-    tr.inks.forEach(function (ink) { strokeLine(ink.pts, ink.pts.length - 1, 9, ink.color); });
+    tr.inks.forEach(function (ink) {
+      if (ink.dot) dot(ink.pts[0], 6, ink.color);
+      else strokeLine(ink.pts, ink.pts.length - 1, 9, ink.color);
+    });
     // el trazo mal hecho se borra poco a poco
     if (tr.bad) {
       var f = 1 - (now - tr.bad.t0) / 900;
@@ -1999,6 +2038,18 @@
       clearTimeout(tr.judgeTimer);
       if (tr.inks.length) tr.judgeTimer = setTimeout(freeCheck, FREE_WAIT_MS);
       return;
+    }
+    var want = tr.strokes[tr.s];
+    if (want.length === 1) {   // el punto de la i: vale un toque (o un trazo cortito) encima
+      var c = want[0];
+      if (ink && minDist(c, ink) <= TRACE_TOL * 1.6 && inkLength(ink) < 30) {
+        tr.inks.push({ pts: [c, [c[0] + 0.01, c[1]]], color: STROKE_COLORS[tr.s % STROKE_COLORS.length], dot: true });
+        tr.s++;
+        if (tr.s < tr.strokes.length) { showFace(true); startDemo(700); return; }
+        letterDone();
+        return;
+      }
+      if (!ink || inkLength(ink) < 6) { if (!demo) startDemo(0); return; }
     }
     if (!ink || inkLength(ink) < 6) { if (!demo) startDemo(0); return; }   // solo un toque
     if (!judgeStroke(ink, tr.strokes[tr.s])) {
@@ -2223,6 +2274,7 @@
                     ['wordq', '🐱 Mira y lee', 've un dibujo y busca su palabra', 'Letras'],
                     ['build', '🧩 Forma palabras', 'ordena las sílabas', 'Letras'],
                     ['trace', '☝️ Traza letras', 'repasa letras con el dedo', 'Letras'],
+                    ['tlow', '☝️ Vocales minúsculas', 'repasa a, e, i, o, u con el dedo', 'Letras'],
                     ['tword', '✏️ Dictado', 'escribe lo que oye, letra a letra', 'Letras'],
                     ['tmiss', '❓ Letra que falta', 'escribe la letra sin ayuda', 'Letras'],
                     ['colors', '🎨 Colores', 'lleva cada color a su nombre', 'Letras'],

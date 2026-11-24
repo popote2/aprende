@@ -1423,3 +1423,7 @@ html, body {
   .n-grid.ten { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(5, minmax(0, 1fr)); }
   .n-grid.ten .n-box { font-size: min(10vh, 18vw); }
 }
+
+/* ---------- Vocales minúsculas ---------- */
+.mode-tlow { background: #6a3db5; box-shadow: 0 8px 0 #47287f; }
+.mode-tlow .art-outline { text-transform: none; }
