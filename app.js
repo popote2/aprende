@@ -153,12 +153,14 @@
     x ^= x >>> 15; x = Math.imul(x, 0x45d9f3b) >>> 0; x ^= x >>> 16;
     return (x >>> 0) % 100 < GOLD_CHANCE * 100;
   }
-  function addPoint() {
+  // own: undefined = cuenta para las estrellas de siempre; true/false = el juego lleva su propia cuenta
+  // (true: toca premio ahora; false: suma el acierto pero sin premio ni estrella del álbum)
+  function addPoint(own) {
     score++;
     saveScore();
     var prize = null;
-    if (prizes.got < STICKERS.length && ++prizes.stars >= STARS_PER_STICKER) {
-      prizes.stars = 0;
+    if (prizes.got < STICKERS.length && (own === undefined ? ++prizes.stars >= STARS_PER_STICKER : own)) {
+      if (own === undefined) prizes.stars = 0;
       var k = prizes.got++;
       var gold = isGold(k);
       if (gold) prizes.gold.push(k);
@@ -2916,6 +2918,9 @@
   var EN_NUMS = ((window.INGLES || []).filter(function (t) { return t[1] === 'num'; })[0] || [0, 0, []])[2]
     .map(function (w) { return { en: w[0], es: w[1], n: +w[2] }; });
   var nRound = null, nLast = null, nTimers = [], nIntro = false;
+  var ENNUM_KEY = 'sumas.numbers', ENNUM_PER_PRIZE = 10;   // un premio cada 10 aciertos de este juego
+  var nHits = 0;
+  try { nHits = parseInt(localStorage.getItem(ENNUM_KEY), 10) || 0; } catch (e) {}
   function stopEnNum() {
     nTimers.forEach(clearTimeout); nTimers = [];
     nRound = null;
@@ -2964,7 +2969,11 @@
       }
       r.busy = true;
       record('ennum', t.en + ' (' + t.n + ')', r.misses === 0);
-      var prize = addPoint();
+      nHits++;
+      var givePrize = nHits >= ENNUM_PER_PRIZE;
+      if (givePrize) nHits = 0;
+      try { localStorage.setItem(ENNUM_KEY, String(nHits)); } catch (e) {}
+      var prize = addPoint(givePrize);
       nButtons.forEach(function (x) { if (x !== b) x.classList.add('dim'); });
       b.classList.remove('hint'); b.classList.add('correct');
       // la palabra escrita, en el sitio del altavoz
