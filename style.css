@@ -1368,3 +1368,11 @@ html, body {
 .m-purse.many .m-coin { width: min(4.6vh, 5.4vw); height: min(4.6vh, 5.4vw); font-size: min(1.8vh, 2vw); }
 .m-purse.many .m-tbug { font-size: min(4vh, 4.6vw); }
 .m-purse.many { gap: 2px; }
+
+/* Bichos sorpresa: zapatero y palometa */
+.roach.sbug .bug-svg { width: 100%; height: 100%; }
+.roach.zapatero .bug-svg { animation: sbugWalk .16s ease-in-out infinite alternate; }
+.roach.palometa .bug-svg { animation: sbugFlap .09s linear infinite alternate; }
+@keyframes sbugWalk { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+@keyframes sbugFlap { from { transform: scaleY(1); } to { transform: scaleY(.72); } }
+@media (prefers-reduced-motion: reduce) { .roach.sbug .bug-svg { animation: none; } }

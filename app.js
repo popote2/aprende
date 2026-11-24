@@ -224,6 +224,8 @@
     t[2].forEach(function (w) { CLIPS[window.inglesClip(w[0])] = w[0]; CLIPS[window.esClip(w[1])] = 'es ' + w[1] + '.'; });
   });
   CLIPS['cucaracha'] = '¡Ay! ¡Ay! ¡Una cucaracha!';
+  CLIPS['sorpresa-zapatero'] = '¡Mira! ¡Un zapatero!';
+  CLIPS['sorpresa-palometa'] = '¡Uy! ¡Una palometa!';
   CLIPS['album-completo'] = '¡Álbum completo! ¡Muy bien Inés!';
   CLIPS['album-nuevo'] = '¡Empieza un álbum nuevo!';
   // Nombres de las pegatinas (si no, nunca se descargan y no suenan)
@@ -2407,7 +2409,9 @@
     elRoach.checked = settings.roach !== false;
     elRoach.onchange = function () { settings.roach = elRoach.checked; saveSettings(); scheduleRoach(); };
     document.getElementById('pRoachNow').onclick = function () { roachRun(); };
-    document.getElementById('pRoachVoice').onclick = function () { play([{ clip: 'cucaracha', pitch: 1.3, rate: 1.1 }]); };
+    document.getElementById('pRoachVoice').onclick = function () {
+      play(SURPRISES.map(function (x) { return { clip: x.clip, pitch: x.pitch, rate: x.rate }; }));
+    };
 
     // Letras
     var auto = !settings.letters || !settings.letters.length;
@@ -3130,15 +3134,31 @@
       roachRun();
     }, ms || (120 + Math.random() * 180) * 1000);   // entre 2 y 5 minutos
   }
+  // Bichos sorpresa: la cucaracha, el zapatero (anda) o la palometa (vuela, más despacio y dando tumbos)
+  function bugArt(id) {
+    var b = (window.BICHOS || []).filter(function (x) { return x[0] === id; })[0];
+    return b ? b[4] : null;
+  }
+  var SURPRISES = [
+    { kind: 'roach', clip: 'cucaracha', pitch: 1.3, rate: 1.1 },
+    { kind: 'zapatero', clip: 'sorpresa-zapatero', pitch: 1.2, rate: 1 },
+    { kind: 'palometa', clip: 'sorpresa-palometa', pitch: 1.2, rate: 1 }
+  ].filter(function (x) { return x.kind === 'roach' || bugArt(x.kind); });
+  var lastSurprise = null;
   function roachRun() {
     if (roachOn) return;
     roachOn = true;
+    var sp;
+    do { sp = pick(SURPRISES); } while (SURPRISES.length > 1 && sp === lastSurprise);
+    lastSurprise = sp;
+    var fly = sp.kind === 'palometa';
     var W = window.innerWidth, H = window.innerHeight, size = Math.max(60, Math.min(W, H) * 0.16);
     var el = document.createElement('div');
-    el.className = 'roach';
-    el.innerHTML = ROACH_SVG;
+    el.className = 'roach' + (sp.kind === 'roach' ? '' : ' sbug ' + sp.kind);
+    el.innerHTML = sp.kind === 'roach' ? ROACH_SVG : bugArt(sp.kind);
+    if (sp.kind !== 'roach') size *= 1.1;
     el.style.width = size + 'px';
-    el.style.height = (size * 0.64) + 'px';
+    el.style.height = (sp.kind === 'roach' ? size * 0.64 : size) + 'px';
     document.body.appendChild(el);
     // entra por un borde y sale por el contrario, dando un par de giros por el medio
     var m = size, side = randInt(4);
@@ -3149,7 +3169,7 @@
     var pts = [edge(side)];
     for (var k = 0; k < 2; k++) pts.push([W * (0.2 + Math.random() * 0.6), H * (0.2 + Math.random() * 0.6)]);
     pts.push(edge(side ^ 1));
-    var speed = Math.min(W, H) * 0.7;          // píxeles por segundo
+    var speed = Math.min(W, H) * (fly ? 0.45 : 0.7);          // píxeles por segundo
     var seg = 1, pos = pts[0].slice(), ang = Math.atan2(pts[1][1] - pos[1], pts[1][0] - pos[0]);
     var pauseUntil = 0, fast = false, last = 0;
     el.addEventListener('pointerdown', function (e) {
@@ -3157,7 +3177,7 @@
       if (fast) return;
       fast = true; pauseUntil = 0;
       el.classList.remove('still');
-      play([{ clip: 'cucaracha', pitch: 1.3, rate: 1.1 }]);
+      play([{ clip: sp.clip, pitch: sp.pitch, rate: sp.rate }]);
     });
     function frame(t) {
       if (!last) last = t;
@@ -3174,14 +3194,16 @@
         pos = target.slice();
         seg++;
         if (seg >= pts.length) { el.remove(); roachOn = false; scheduleRoach(); return; }
-        if (!fast && Math.random() < 0.6) {    // se para un momento y mueve las antenas
+        if (!fast && !fly && Math.random() < 0.6) {    // se para un momento y mueve las antenas
           pauseUntil = t + 300 + Math.random() * 700;
           el.classList.add('still');
         }
       } else {
         pos[0] += dx / d * step; pos[1] += dy / d * step;
       }
-      el.style.transform = 'translate(' + (pos[0] - size / 2) + 'px,' + (pos[1] - size * 0.32) + 'px) rotate(' + ang + 'rad)';
+      var hy = sp.kind === 'roach' ? size * 0.32 : size / 2;
+      var wob = fly ? Math.sin(t / 140) * size * 0.25 : 0;      // la palometa sube y baja al volar
+      el.style.transform = 'translate(' + (pos[0] - size / 2) + 'px,' + (pos[1] - hy + wob) + 'px) rotate(' + ang + 'rad)';
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
