@@ -228,6 +228,7 @@
   });
   CLIPS['cucaracha'] = '¡Ay! ¡Ay! ¡Una cucaracha!';
   CLIPS['ennum'] = 'Escucha el número en inglés y toca su cuadro.';
+  (window.MAS_NUMEROS || []).forEach(function (w) { CLIPS[window.inglesClip(w[0])] = w[0]; CLIPS[window.esClip(w[1])] = 'es ' + w[1] + '.'; });
   CLIPS['sorpresa-zapatero'] = '¡Mira! ¡Un zapatero!';
   CLIPS['sorpresa-palometa'] = '¡Uy! ¡Una palometa!';
   CLIPS['album-completo'] = '¡Álbum completo! ¡Muy bien Inés!';
@@ -2910,12 +2911,13 @@
   });
   document.getElementById('home8').addEventListener('click', goHome);
 
-  // ---------- «Numbers»: oye un número en inglés (1 a 10) y toca su cuadro ----------
+  // ---------- «Numbers»: oye un número en inglés (1 a 20) y toca su cuadro ----------
   var elEnNum = document.getElementById('enNum');
   var elNEar = document.getElementById('nEar');
   var elNWord = document.getElementById('nWord');
   var nButtons = Array.prototype.slice.call(document.querySelectorAll('#nGrid .n-box'));
   var EN_NUMS = ((window.INGLES || []).filter(function (t) { return t[1] === 'num'; })[0] || [0, 0, []])[2]
+    .concat(window.MAS_NUMEROS || [])
     .map(function (w) { return { en: w[0], es: w[1], n: +w[2] }; });
   var nRound = null, nLast = null, nTimers = [], nIntro = false;
   var ENNUM_KEY = 'sumas.numbers', ENNUM_PER_PRIZE = 10;   // un premio cada 10 aciertos de este juego

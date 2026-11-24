@@ -28,6 +28,13 @@ self.INGLES = [
   ]]
 ];
 
+// «Numbers»: del 11 al 20 (el 1 al 10 son los del tema Números). [inglés, español, cifra]
+self.MAS_NUMEROS = [
+  ['eleven', 'once', '11'], ['twelve', 'doce', '12'], ['thirteen', 'trece', '13'], ['fourteen', 'catorce', '14'],
+  ['fifteen', 'quince', '15'], ['sixteen', 'dieciséis', '16'], ['seventeen', 'diecisiete', '17'],
+  ['eighteen', 'dieciocho', '18'], ['nineteen', 'diecinueve', '19'], ['twenty', 'veinte', '20']
+];
+
 self.inglesClip = function (en) { return 'en-' + en.replace(/ /g, '-'); };
 // "es gato." en español (mismas reglas que premioClip: sin tildes, ñ -> ny)
 self.esClip = function (es) { return self.premioClip(es).replace(/^w-/, 'es-'); };

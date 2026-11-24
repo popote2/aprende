@@ -1386,9 +1386,9 @@ html, body {
 .n-word { min-width: 0; width: 100%; }
 .n-word b { font-size: min(9vh, 6vw); }
 .n-word span { font-size: min(5vh, 3.6vw); }
-.n-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--gap); }
-.n-box { min-height: 0; border: 0; border-radius: clamp(14px, 3vmin, 32px); font: inherit; font-weight: 900; font-size: min(20vh, 9vw);
-  color: #fff; cursor: pointer; text-shadow: 0 .04em 0 rgba(0, 0, 0, .2); box-shadow: 0 8px 0 rgba(0, 0, 0, .25);
+.n-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: calc(var(--gap) * .7); }
+.n-box { min-height: 0; border: 0; border-radius: clamp(14px, 3vmin, 32px); font: inherit; font-weight: 900; font-size: min(11vh, 8vw);
+  color: #fff; cursor: pointer; text-shadow: 0 .04em 0 rgba(0, 0, 0, .2); box-shadow: 0 5px 0 rgba(0, 0, 0, .25);
   touch-action: manipulation; transition: transform .12s ease, opacity .2s ease, background-color .2s ease; }
 .n-box:nth-child(5n+1) { background: var(--blue); }
 .n-box:nth-child(5n+2) { background: var(--red); }
@@ -1407,6 +1407,6 @@ html, body {
   .n-word { width: auto; height: 100%; }
   .n-word b { font-size: min(8vh, 13vw); }
   .n-word span { font-size: min(4vh, 6vw); }
-  .n-grid { flex: 1 1 0; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(5, minmax(0, 1fr)); }
-  .n-box { font-size: min(10vh, 18vw); }
+  .n-grid { flex: 1 1 0; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(5, minmax(0, 1fr)); }
+  .n-box { font-size: min(8vh, 11vw); }
 }
