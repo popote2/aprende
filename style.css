@@ -1372,10 +1372,10 @@ html, body {
 /* Bichos sorpresa: zapatero y palometa */
 .roach.sbug .bug-svg { width: 100%; height: 100%; }
 .roach.zapatero .bug-svg { animation: sbugWalk .16s ease-in-out infinite alternate; }
-.roach.palometa .bug-svg { animation: sbugFlap .09s linear infinite alternate; }
+.roach.palometa .pw { transform-box: fill-box; transform-origin: 50% 100%; animation: paloWing .13s ease-in-out infinite alternate; }
 @keyframes sbugWalk { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
-@keyframes sbugFlap { from { transform: scaleY(1); } to { transform: scaleY(.72); } }
-@media (prefers-reduced-motion: reduce) { .roach.sbug .bug-svg { animation: none; } }
+@keyframes paloWing { from { transform: scaleY(1); } to { transform: scaleY(.25); } }
+@media (prefers-reduced-motion: reduce) { .roach.sbug .bug-svg, .roach.palometa .pw { animation: none; } }
 
 /* ---------- «Numbers» ---------- */
 .mode-ennum { background: #457b9d; box-shadow: 0 8px 0 #2c5370; }

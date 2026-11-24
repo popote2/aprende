@@ -2470,6 +2470,8 @@
     elRoach.checked = settings.roach !== false;
     elRoach.onchange = function () { settings.roach = elRoach.checked; saveSettings(); scheduleRoach(); };
     document.getElementById('pRoachNow').onclick = function () { roachRun(); };
+    document.getElementById('pRoachPalo').onclick = function () { roachRun('palometa'); };
+    document.getElementById('pRoachZapa').onclick = function () { roachRun('zapatero'); };
     document.getElementById('pRoachVoice').onclick = function () {
       play(SURPRISES.map(function (x) { return { clip: x.clip, pitch: x.pitch, rate: x.rate }; }));
     };
@@ -3320,18 +3322,23 @@
     { kind: 'zapatero', clip: 'sorpresa-zapatero', pitch: 1.2, rate: 1 },
     { kind: 'palometa', clip: 'sorpresa-palometa', pitch: 1.2, rate: 1 }
   ].filter(function (x) { return x.kind === 'roach' || bugArt(x.kind); });
+  // La palometa que sale volando: vista desde arriba, con las alas abiertas que se mueven (.pw)
+  var PALO_FLY = '<svg class="bug-svg" viewBox="-50 -50 100 100" aria-hidden="true">' +
+    '<g class="pw"><path d="M-6 -3 Q-24 -30 -40 -30 Q-44 -16 -26 -3 Z" fill="#bcae9e" stroke="#6b5a48" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 -3 Q8 -34 -10 -46 Q-24 -46 -26 -36 Q-20 -14 -8 -3 Z" fill="#a8998a" stroke="#6b5a48" stroke-width="1.6" stroke-linejoin="round"/><g fill="#6b5a48" opacity=".7"><circle cx="-6" cy="-30" r="2.2"/><circle cx="-14" cy="-20" r="1.8"/><circle cx="0" cy="-16" r="1.6"/><circle cx="-18" cy="-37" r="1.6"/></g><path d="M-24 -38 Q-12 -42 -4 -38" stroke="#d8cdc0" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/></g>' +
+    '<g transform="scale(1,-1)"><g class="pw"><path d="M-6 -3 Q-24 -30 -40 -30 Q-44 -16 -26 -3 Z" fill="#bcae9e" stroke="#6b5a48" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 -3 Q8 -34 -10 -46 Q-24 -46 -26 -36 Q-20 -14 -8 -3 Z" fill="#a8998a" stroke="#6b5a48" stroke-width="1.6" stroke-linejoin="round"/><g fill="#6b5a48" opacity=".7"><circle cx="-6" cy="-30" r="2.2"/><circle cx="-14" cy="-20" r="1.8"/><circle cx="0" cy="-16" r="1.6"/><circle cx="-18" cy="-37" r="1.6"/></g><path d="M-24 -38 Q-12 -42 -4 -38" stroke="#d8cdc0" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/></g></g>' +
+    '<path d="M24 -2 Q34 -10 40 -20 M24 2 Q34 10 40 20" stroke="#5a4a3a" stroke-width="1.6" fill="none" stroke-linecap="round"/><ellipse cx="0" cy="0" rx="22" ry="6.5" fill="#8c7c6b" stroke="#5a4a3a" stroke-width="1.6"/><path d="M-18 0 L14 0" stroke="#6b5a48" stroke-width="1" opacity=".6"/><circle cx="23" cy="0" r="6" fill="#8c7c6b" stroke="#5a4a3a" stroke-width="1.6"/><circle cx="26" cy="-3.4" r="2.3" fill="#222"/><circle cx="26" cy="3.4" r="2.3" fill="#222"/></svg>';
   var lastSurprise = null;
-  function roachRun() {
+  function roachRun(kind) {   // kind: 'roach' | 'zapatero' | 'palometa' (sin nada, uno al azar)
     if (roachOn) return;
     roachOn = true;
-    var sp;
-    do { sp = pick(SURPRISES); } while (SURPRISES.length > 1 && sp === lastSurprise);
+    var sp = SURPRISES.filter(function (x) { return x.kind === kind; })[0];
+    if (!sp) do { sp = pick(SURPRISES); } while (SURPRISES.length > 1 && sp === lastSurprise);
     lastSurprise = sp;
     var fly = sp.kind === 'palometa';
     var W = window.innerWidth, H = window.innerHeight, size = Math.max(60, Math.min(W, H) * 0.16);
     var el = document.createElement('div');
     el.className = 'roach' + (sp.kind === 'roach' ? '' : ' sbug ' + sp.kind);
-    el.innerHTML = sp.kind === 'roach' ? ROACH_SVG : bugArt(sp.kind);
+    el.innerHTML = sp.kind === 'roach' ? ROACH_SVG : fly ? PALO_FLY : bugArt(sp.kind);
     if (sp.kind !== 'roach') size *= 1.1;
     el.style.width = size + 'px';
     el.style.height = (sp.kind === 'roach' ? size * 0.64 : size) + 'px';
