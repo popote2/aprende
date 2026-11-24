@@ -202,7 +202,7 @@
                  t: 'te', n: 'ene', d: 'de', b: 'be', c: 'ce', f: 'efe', g: 'ge', r: 'erre',
                  v: 'uve', j: 'jota', 'ñ': 'eñe', z: 'zeta', ll: 'elle', ch: 'che', y: 'i griega',
                  h: 'hache' };
-  (window.MAS_PALABRAS || []).concat(window.PALABRAS_LARGAS || []).forEach(function (p) {
+  (window.MAS_PALABRAS || []).concat(window.PALABRAS_LARGAS || [], window.NUMEROS_PALABRAS || []).forEach(function (p) {
     CLIPS[window.palabraClip(p[0])] = p[0].replace(/-/g, '').toLowerCase();
   });
   CLIPS['como-en'] = 'Como en...';
@@ -1061,11 +1061,16 @@
     (window.PALABRAS || []).forEach(function (p) { add(p[0], p[1]); });
     SILABAS.forEach(function (x) { x[1].forEach(function (ex) { add(ex[0], ex[1]); }); });
   })();
+  // Números del 1 al 10: la cifra es el dibujo; salen una de cada cuatro veces
+  var QUIZ_NUMS = (window.NUMEROS_PALABRAS || []).map(function (p) {
+    return { text: noTildes(p[0].replace(/-/g, '')), sils: noTildes(p[0]).split('-'), emoji: p[1], num: true, clip: window.palabraClip(p[0]) };
+  });
 
   function wordRound() {
-    var target;
-    do { target = pick(QUIZ_WORDS); } while (target === quizLast && QUIZ_WORDS.length > 1);
-    var others = QUIZ_WORDS.filter(function (w) { return w !== target && w.emoji !== target.emoji; });
+    var target, pool = QUIZ_NUMS.length && Math.random() < 0.25 ? QUIZ_NUMS : QUIZ_WORDS;
+    do { target = pick(pool); } while (target === quizLast && pool.length > 1);
+    // con un número, las otras opciones también son números (CUATRO / CINCO, SEIS / SIETE...)
+    var others = pool.filter(function (w) { return w !== target && w.emoji !== target.emoji && w.text !== target.text; });
     var opts = [target];
     function tryAdd(list) {
       list = shuffle(list.filter(function (w) { return opts.indexOf(w) < 0; }));
@@ -1211,6 +1216,7 @@
     }
     if (!earMode) {
       elQuizPic.textContent = quizItem.answer.emoji;
+      elQuizPic.classList.toggle('qnum', !!quizItem.answer.num);
       bounce(elQuizPic, 'cheer');
     }
     quizButtons.forEach(function (btn, k) {

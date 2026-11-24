@@ -153,6 +153,12 @@ self.MAS_PALABRAS = [
   ['U-NO', '1️⃣']
 ];
 
+// Números para «Mira y lee»: sale la cifra y busca su palabra
+self.NUMEROS_PALABRAS = [
+  ['U-NO', '1'], ['DOS', '2'], ['TRES', '3'], ['CUA-TRO', '4'], ['CIN-CO', '5'],
+  ['SEIS', '6'], ['SIE-TE', '7'], ['O-CHO', '8'], ['NUE-VE', '9'], ['DIEZ', '10']
+];
+
 // Palabras largas para «Forma palabras»: 3 y 4 sílabas cortas (consonante + vocal, o vocal sola)
 self.PALABRAS_LARGAS = [
   ['CO-RO-NA', '👑'],
