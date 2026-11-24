@@ -2923,6 +2923,32 @@
   var ENNUM_KEY = 'sumas.numbers', ENNUM_PER_PRIZE = 10;   // un premio cada 10 aciertos de este juego
   var nHits = 0;
   try { nHits = parseInt(localStorage.getItem(ENNUM_KEY), 10) || 0; } catch (e) {}
+  // interruptor en el propio juego: 10 o 20 cuadros
+  var NMAX_KEY = 'sumas.numbers.max', nMax = 20;
+  try { if (localStorage.getItem(NMAX_KEY) === '10') nMax = 10; } catch (e) {}
+  var elNGrid = document.getElementById('nGrid');
+  var nSwitchBtns = Array.prototype.slice.call(document.querySelectorAll('#nSwitch button'));
+  function applyNMax() {
+    elNGrid.classList.toggle('ten', nMax === 10);
+    nButtons.forEach(function (b) { b.hidden = +b.dataset.n > nMax; });
+    nSwitchBtns.forEach(function (b) {
+      var on = +b.dataset.max === nMax;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  nSwitchBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = +b.dataset.max;
+      if (v === nMax) return;
+      nMax = v;
+      try { localStorage.setItem(NMAX_KEY, String(v)); } catch (e) {}
+      applyNMax();
+      unlockSound();
+      if (nRound && !nRound.busy) { nLast = null; enNumRound(); }
+    });
+  });
+  applyNMax();
   function stopEnNum() {
     nTimers.forEach(clearTimeout); nTimers = [];
     nRound = null;
@@ -2939,7 +2965,8 @@
     elNEar.hidden = false;
     nButtons.forEach(function (b) { b.className = 'n-box'; });
     var t;
-    do { t = pick(EN_NUMS); } while (nLast && t.n === nLast && EN_NUMS.length > 1);
+    var pool = EN_NUMS.filter(function (x) { return x.n <= nMax; });
+    do { t = pick(pool); } while (nLast && t.n === nLast && pool.length > 1);
     nLast = t.n;
     nRound = { num: t, misses: 0, busy: false };
     askEnNum();
