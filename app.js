@@ -20,10 +20,10 @@
 
   // Lo que más falla: { math: { '3 + 4': [aciertos, fallos] }, syl: {...}, word: {...} }
   var STATS_KEY = 'sumas.fallos';
-  var stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {}, body: {} };
+  var stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {}, body: {}, ennum: {} };
   try {
     var savedStats = JSON.parse(localStorage.getItem(STATS_KEY));
-    if (savedStats) ['math', 'syl', 'word', 'build', 'trace', 'write', 'miss', 'color', 'english', 'body'].forEach(function (k) { if (savedStats[k]) stats[k] = savedStats[k]; });
+    if (savedStats) ['math', 'syl', 'word', 'build', 'trace', 'write', 'miss', 'color', 'english', 'body', 'ennum'].forEach(function (k) { if (savedStats[k]) stats[k] = savedStats[k]; });
   } catch (e) {}
   function record(cat, key, ok) {
     var e = stats[cat][key] || (stats[cat][key] = [0, 0]);
@@ -78,7 +78,8 @@
   var elScore5 = document.getElementById('score5');
   var elScore6 = document.getElementById('score6');
   var elScore7 = document.getElementById('score7');
-  elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = elScore7.textContent = score;
+  var elScore8 = document.getElementById('score8');
+  elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = elScore7.textContent = elScore8.textContent = score;
 
   // Todas las operaciones posibles, para elegir de forma uniforme
   //  sumas:  a + b con resultado 0-10
@@ -166,7 +167,7 @@
     }
     savePrizes();
     updateAlbumDots();
-    [elScore, elScore2, elScore3, elScore4, elScore5, elScore6, elScore7].forEach(function (el) {
+    [elScore, elScore2, elScore3, elScore4, elScore5, elScore6, elScore7, elScore8].forEach(function (el) {
       el.textContent = score;
       var box = el.parentNode;
       box.classList.remove('bump');
@@ -224,6 +225,7 @@
     t[2].forEach(function (w) { CLIPS[window.inglesClip(w[0])] = w[0]; CLIPS[window.esClip(w[1])] = 'es ' + w[1] + '.'; });
   });
   CLIPS['cucaracha'] = '¡Ay! ¡Ay! ¡Una cucaracha!';
+  CLIPS['ennum'] = 'Escucha el número en inglés y toca su cuadro.';
   CLIPS['sorpresa-zapatero'] = '¡Mira! ¡Un zapatero!';
   CLIPS['sorpresa-palometa'] = '¡Uy! ¡Una palometa!';
   CLIPS['album-completo'] = '¡Álbum completo! ¡Muy bien Inés!';
@@ -686,8 +688,10 @@
       elStart.hidden = true;
       elStart.style.display = 'none';   // por si el navegador tuviera un CSS antiguo
       unlockSound();
-      elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = elBodyG.hidden = elMoney.hidden = true;
-      if (mode === 'money' || mode === 'bugs') {
+      elGame.hidden = elReader.hidden = elSylScreen.hidden = elQuiz.hidden = elTrace.hidden = elColors.hidden = elBodyG.hidden = elMoney.hidden = elEnNum.hidden = true;
+      if (mode === 'ennum') {
+        startEnNum();
+      } else if (mode === 'money' || mode === 'bugs') {
         startMoney(mode);
       } else if (mode === 'colors') {
         startColors();
@@ -730,6 +734,7 @@
     stopColors();
     stopBody();
     stopMoney();
+    stopEnNum();
     elAlbum.hidden = true;
     elParents.hidden = true;
     applyModes();
@@ -2219,7 +2224,8 @@
                     ['tmiss', '❓ Letra que falta', 'escribe la letra sin ayuda', 'Letras'],
                     ['colors', '🎨 Colores', 'lleva cada color a su nombre', 'Letras'],
                     ['english', '🔤 Inglés', 'escucha en inglés y toca el dibujo', 'Letras'],
-                    ['body', '👃 Touch your nose', 'inglés: toca esa parte del cuerpo', 'Letras']];
+                    ['body', '👃 Touch your nose', 'inglés: toca esa parte del cuerpo', 'Letras'],
+                    ['ennum', '🔢 Numbers', 'inglés: oye un número y toca su cuadro', 'Letras']];
   var ALL_LETTERS = [];
   SILABAS.forEach(function (x) {
     var c = window.letrasDe(x[0])[0];
@@ -2484,7 +2490,7 @@
     var elStats = document.getElementById('pStats');
     elStats.innerHTML = '';
     var any = false;
-    [['math', 'Sumas y restas'], ['syl', 'Sílabas'], ['word', 'Palabras'], ['build', 'Formar palabras'], ['trace', 'Trazar letras'], ['write', 'Dictado'], ['miss', 'La letra que falta'], ['color', 'Colores'], ['english', 'Inglés'], ['body', 'Touch your nose']].forEach(function (c) {
+    [['math', 'Sumas y restas'], ['syl', 'Sílabas'], ['word', 'Palabras'], ['build', 'Formar palabras'], ['trace', 'Trazar letras'], ['write', 'Dictado'], ['miss', 'La letra que falta'], ['color', 'Colores'], ['english', 'Inglés'], ['body', 'Touch your nose'], ['ennum', 'Números en inglés']].forEach(function (c) {
       var rows = Object.keys(stats[c[0]]).map(function (k) { return [k, stats[c[0]][k][0], stats[c[0]][k][1]]; })
         .filter(function (r) { return r[2] > 0; })
         .sort(function (a, b) { return (b[2] - a[2]) || (b[2] / (b[1] + b[2]) - a[2] / (a[1] + a[2])); })
@@ -2518,14 +2524,14 @@
       b.classList.remove('armed');
       var what = b.dataset.reset;
       if (what === 'stats') {
-        stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {}, body: {} };
+        stats = { math: {}, syl: {}, word: {}, build: {}, trace: {}, write: {}, miss: {}, color: {}, english: {}, body: {}, ennum: {} };
         try { localStorage.removeItem(STATS_KEY); } catch (e) {}
       } else if (what === 'stars') {
         score = 0;
         saveScore();
         prizes = { got: 0, stars: 0, gold: [] };
         savePrizes();
-        elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = elScore7.textContent = score;
+        elScore.textContent = elScore2.textContent = elScore3.textContent = elScore4.textContent = elScore5.textContent = elScore6.textContent = elScore7.textContent = elScore8.textContent = score;
         updateAlbumDots();
       } else if (what === 'body') {
         body = { lvl: 1, hits: 0 };
@@ -2901,6 +2907,86 @@
     bTimers.push(setTimeout(next, 6000));
   });
   document.getElementById('home8').addEventListener('click', goHome);
+
+  // ---------- «Numbers»: oye un número en inglés (1 a 10) y toca su cuadro ----------
+  var elEnNum = document.getElementById('enNum');
+  var elNEar = document.getElementById('nEar');
+  var elNWord = document.getElementById('nWord');
+  var nButtons = Array.prototype.slice.call(document.querySelectorAll('#nGrid .n-box'));
+  var EN_NUMS = ((window.INGLES || []).filter(function (t) { return t[1] === 'num'; })[0] || [0, 0, []])[2]
+    .map(function (w) { return { en: w[0], es: w[1], n: +w[2] }; });
+  var nRound = null, nLast = null, nTimers = [], nIntro = false;
+  function stopEnNum() {
+    nTimers.forEach(clearTimeout); nTimers = [];
+    nRound = null;
+    elEnNum.hidden = true;
+  }
+  function startEnNum() {
+    elEnNum.hidden = false;
+    nIntro = true;
+    enNumRound();
+  }
+  function enNumRound() {
+    nTimers.forEach(clearTimeout); nTimers = [];
+    elNWord.hidden = true;
+    elNEar.hidden = false;
+    nButtons.forEach(function (b) { b.className = 'n-box'; });
+    var t;
+    do { t = pick(EN_NUMS); } while (nLast && t.n === nLast && EN_NUMS.length > 1);
+    nLast = t.n;
+    nRound = { num: t, misses: 0, busy: false };
+    askEnNum();
+  }
+  function askEnNum() {
+    if (!nRound) return;
+    bounce(elNEar, 'lit');
+    var list = [];
+    if (nIntro) { list.push({ clip: 'ennum', pitch: 1, rate: 1 }); nIntro = false; }
+    list.push({ clip: window.inglesClip(nRound.num.en), pitch: 1, rate: 0.9 });
+    play(list);
+  }
+  elNEar.addEventListener('click', function () {
+    unlockSound();
+    if (nRound && !nRound.busy) askEnNum();
+  });
+  nButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var r = nRound;
+      if (!r || r.busy) return;
+      unlockSound();
+      var v = +b.dataset.n, t = r.num;
+      if (v !== t.n) {
+        r.misses++;
+        b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+        if (r.misses >= 2) nButtons[t.n - 1].classList.add('hint');   // a la segunda, brilla el bueno
+        play([{ clip: 'uy', pitch: 1.1, rate: 1 }, { clip: window.inglesClip(t.en), pitch: 1, rate: 0.9 }]);
+        return;
+      }
+      r.busy = true;
+      record('ennum', t.en + ' (' + t.n + ')', r.misses === 0);
+      var prize = addPoint();
+      nButtons.forEach(function (x) { if (x !== b) x.classList.add('dim'); });
+      b.classList.remove('hint'); b.classList.add('correct');
+      // la palabra escrita, en el sitio del altavoz
+      elNWord.firstChild.textContent = t.en.toUpperCase();
+      elNWord.lastChild.textContent = t.n + ' · ' + t.es;
+      elNEar.hidden = true;
+      elNWord.hidden = false;
+      bounce(elNWord, 'lit');
+      var done = false;
+      function next() {
+        if (done || r !== nRound) return;
+        done = true;
+        if (prize) showReward(prize, function () { if (!elEnNum.hidden) enNumRound(); });
+        else enNumRound();
+      }
+      // "¡Muy bien Inés! Seven... es siete."
+      play([{ clip: 'muy-bien', pitch: 1.1, rate: 1 }, { clip: window.inglesClip(t.en), pitch: 1, rate: 0.9 },
+            { clip: window.esClip(t.es), pitch: 1, rate: 0.95 }], function () { nTimers.push(setTimeout(next, 600)); });
+      nTimers.push(setTimeout(next, 6000));
+    });
+  });
+  document.getElementById('home10').addEventListener('click', goHome);
 
   // ---------- Inglés («Listen and touch»): oye una palabra en inglés y toca su dibujo ----------
   var ENG_THEMES = (window.INGLES || []).map(function (t) {
